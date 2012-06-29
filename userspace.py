@@ -16,7 +16,13 @@ def main():
     if page.title().startswith(creator + '/'):
       old = page.title()
       new = 'User:' + page.title()
-      page.move(new, reason='Moving accidentally created subpage into userspace')
+      #verify that we haven't touched the page yet
+      history = page.getVersionHistory()
+      for item in history:
+        if item[2] == u'Legobot':
+          print 'We have already touched %s. Skipping!' %(page.title())
+          continue
+      page.move(new, reason='BOT: Moving accidentally created subpage into userspace')
       #delete newly created redirect
       #Apparently bots can move pages without creating redirects so this part isnt needed...
 #      oldpage = pywikibot.Page(site, old)
