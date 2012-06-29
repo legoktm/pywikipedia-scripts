@@ -3,10 +3,29 @@
 # (C) 2012, Legoktm, under the MIT License
 # Checks the new pages list to see whether it should have been made in the userspace, and if so, moves it.
 #
+import sys
 
 import pywikibot
 from pywikibot import pagegenerators
 site = pywikibot.getSite()
+
+
+
+def trial_count():
+  try:
+    f = open('trial.txt', 'r')
+    i = int(f.read())
+    f.close()
+  except:
+    i = 0
+  if i == 10:
+    print 'Completed trial already! Quitting.'
+    sys.exit()
+  i += 1
+  f = open('trial.txt', 'w')
+  f.write(str(i))
+  f.close()
+
 
 def main():
   #get page list
@@ -22,6 +41,7 @@ def main():
         if item[2] == u'Legobot':
           print 'We have already touched %s. Skipping!' %(page.title())
           continue
+      trial_count()
       page.move(new, reason='BOT: Moving accidentally created subpage into userspace')
       #delete newly created redirect
       #Apparently bots can move pages without creating redirects so this part isnt needed...
