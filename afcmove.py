@@ -25,7 +25,7 @@ def main():
     old = item['old']
     new = item['new']
     user = item['user']
-    if old.startswith('Articles for creation/'):
+    if new.startswith('Articles for creation/'):
       print 'Will log %s --> %s' % (old, new)
       log = True
     if old.startswith('Wikipedia talk:Articles for creation/') and new.startswith('Wikipedia talk:'):
