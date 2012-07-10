@@ -51,7 +51,10 @@ def main():
     if old.startswith('Wikipedia:Articles for creation/') and new.startswith('Wikipedia:'):
       log = True
     if not log:
-      print u'Skipping %s --> %s' % (old, new)
+      try:
+        print u'Skipping %s --> %s' % (old, new)
+      except UnicodeEncodeError:
+        continue
       continue
     print u'Will log %s --> %s' % (old, new)
     logtext += u'* [[%s]] --> [[%s]] by [[User:%s|]]\n' % (old, new, user)
