@@ -22,7 +22,7 @@ def MovedPagesGenerator(timestamp):
 
 def create_timestamp():
   now = datetime.datetime.now()
-  return '%s-%s-%sT00:00:00Z' % (now.year, abs_zero(now.month), abs_zero(now.day))
+  return '%s-%s-%sT%s:00:00Z' % (now.year, abs_zero(now.month), abs_zero(now.day), abs_zero(now.hour))
 
 def abs_zero(input):
   if len(str(input)) == 1:
