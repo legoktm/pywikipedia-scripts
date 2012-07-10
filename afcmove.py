@@ -12,17 +12,21 @@ import datetime
 import os
 site = pywikibot.getSite()
 
-def MovedPagesGenerator(timestamp):
-  request = pywikibot.data.api.ListGenerator(site=site, listaction='logevents',letype='move', lestart=timestamp, ledir='newer')
+def MovedPagesGenerator(ts, old_ts):
+  request = pywikibot.data.api.ListGenerator(site=site, listaction='logevents',letype='move', lestart=ts, leend=old_ts)
   for item in request:
     yield {'old':item['title'], 'new':item['move']['new_title'], 'user':item['user']}
 
 
 
 
-def create_timestamp():
+def create_timestamp(old=False):
   now = datetime.datetime.now()
-  return '%s-%s-%sT%s:00:00Z' % (now.year, abs_zero(now.month), abs_zero(now.day), abs_zero(now.hour))
+  if old:
+    hour = now.hour-1
+  else:
+    hour = now.hour
+  return '%s-%s-%sT%s:00:00Z' % (now.year, abs_zero(now.month), abs_zero(now.day), abs_zero(hour))
 
 def abs_zero(input):
   if len(str(input)) == 1:
@@ -31,8 +35,9 @@ def abs_zero(input):
 
 def main():
   #get page list
-  timestamp = create_timestamp()
-  gen = MovedPagesGenerator(timestamp=timestamp)
+  ts = create_timestamp()
+  old_ts = create_timestamp(old=True)
+  gen = MovedPagesGenerator(ts, old_ts)
   logtext = ''
   for item in gen:
     log = False
