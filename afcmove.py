@@ -8,17 +8,31 @@ if they were messed up AFC moves. If so, log them at [[Wikipedia:Articles for cr
 
 import pywikibot
 import pywikibot.data.api
+import datetime
+import os
 site = pywikibot.getSite()
 
-def MovedPagesGenerator(total=100):
-  request = pywikibot.data.api.Request(site=site, action='query',list='logevents',letype='move',lelimit=total)
-  data = request.submit()
-  for item in data['query']['logevents']:
+def MovedPagesGenerator(timestamp):
+  request = pywikibot.data.api.ListGenerator(site=site, listaction='logevents',letype='move', lestart=timestamp, ledir='newer')
+  for item in request:
     yield {'old':item['title'], 'new':item['move']['new_title'], 'user':item['user']}
+
+
+
+
+def create_timestamp():
+  now = datetime.datetime.now()
+  return '%s-%s-%sT00:00:00Z' % (now.year, abs_zero(now.month), abs_zero(now.day))
+
+def abs_zero(input):
+  if len(str(input)) == 1:
+    return '0' + str(input)
+  return str(input)
 
 def main():
   #get page list
-  gen = MovedPagesGenerator(total=100)
+  timestamp = create_timestamp()
+  gen = MovedPagesGenerator(timestamp=timestamp)
   logtext = ''
   for item in gen:
     log = False
