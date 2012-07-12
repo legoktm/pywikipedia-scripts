@@ -63,7 +63,7 @@ def main():
     return
   p = pywikibot.Page(site, u'Wikipedia:Articles for creation/Wrongly moved submissions')
   current_text = p.get()
-  newtext = current_text + logtext
+  newtext = current_text + '\n' + logtext
   p.put(newtext, u'BOT: Updating log')
     
     
