@@ -60,6 +60,14 @@ class IndexerBot:
         struct = time.gmtime(timestamp)
         return time.strftime('%H:%M, %d %B %Y', struct)
         
+    def mwToEpoch(self, timestamp):
+        """
+        Converts a mediawiki timestamp to unix epoch time
+        """
+        try:
+            return time.strptime(timestamp, '%H:%M, %d %B %Y')
+        except ValueError:
+            return time.strptime(timestamp, '%H:%M:%S, %d %B %Y') # Some users (ex: Pathoschild) include seconds in their signature
     
     def humanReadable(self, seconds):
         return str(datetime.timedelta(seconds=seconds))
