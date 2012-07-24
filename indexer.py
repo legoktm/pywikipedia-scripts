@@ -130,8 +130,8 @@ class IndexerBot:
         #verify we can edit the target, otherwise just skip it
         #hopefully this will save processing time
         indexPage = pywikibot.Page(self.site, info['target'])
-        text = indexPage.get()
-        if not self.__okToEdit(text):
+        indexPageOldText = indexPage.get()
+        if not self.__okToEdit(indexPageOldText):
             raise NotAllowedToEditPage
         #looks good, lets go
         data = {}
