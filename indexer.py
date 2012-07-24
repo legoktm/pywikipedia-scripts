@@ -176,7 +176,7 @@ class IndexerBot:
             parsed = self.parseArchive(page)
             data['parsed'].extend(parsed)
         #build the index      
-        indexText = self.__buildIndex(data['parsed'], data['template'])
+        indexText = self.__buildIndex(data['parsed'], data['template'], info)
         print 'Will edit %s' % indexPage.title()
         indexPage.put(indexText, 'BOT: Updating index (currently testing)')
     
@@ -205,7 +205,7 @@ class IndexerBot:
     def __okToEdit(self, text):
         return bool(re.search('<!-- (HBC Archive Indexerbot|Legobot) can blank this -->', text))
     
-    def __buildIndex(self, parsedData, template):
+    def __buildIndex(self, parsedData, template, info):
         """
         Reads the template and creates the index for it
         """
@@ -239,6 +239,11 @@ class IndexerBot:
         #finished reading the template
         indexText = '<!-- HBC Archive Indexerbot can blank this -->'
         indexText += templateData['lead']
+        reportInfo = 'Report generated based on a request from [[%s]]. It matches the following masks: ' % info['talkpage'].title()
+        for mask in info['mask']:
+            reportInfo += '%s, ' % mask
+        reportInfo += '\n<br />\nIt was generated at ~~~~~ by [[User:Legobot|Legobot]].\n'
+        indexText += reportInfo
         indexText += templateData['header']
         alt = False
         for item in parsedData:
