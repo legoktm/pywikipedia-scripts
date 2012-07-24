@@ -7,7 +7,6 @@ import calendar
 import urllib
 import datetime
 import pywikibot
-import time
 
 
 #constants
