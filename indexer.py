@@ -156,6 +156,19 @@ class IndexerBot:
         time.sleep(10)
         indexPage.put(indexText, 'BOT: Updating index (currently testing)')
     
+    def __cleanLinks(self, link):
+        link = link.encode('utf-8')
+        search = re.search('\[\[(.*?)\|(.*?)\]\]', link)
+        while search:
+            link = link.replace(search.group(0), search.group(2))
+            search = re.search('\[\[(.*?)\|(.*?)\]\]', link)
+        search = re.search('\[\[(.*?)\]\]', link)
+        while search:
+            link = link.replace(search.group(0), search.group(1))
+            search = re.search('\[\[(.*?)\]\]', link)
+        link = urllib.quote(link)
+        return link
+    
     def __buildIndex(self, parsedData, template):
         """
         Reads the template and creates the index for it
@@ -167,7 +180,6 @@ class IndexerBot:
         lastKey = template.find('</nowiki>')
         importantStuff = template[key+8:lastKey]
         split = re.split('<!--\s', importantStuff)
-        print split
         for item in split:
             if item.startswith('HEADER'):
                 templateData['header'] = item[11:]
