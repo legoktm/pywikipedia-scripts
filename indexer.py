@@ -14,6 +14,27 @@ import time
 MONTH_NAMES = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')
 MONTH_REGEX = 'January|February|March|April|May|June|July|August|September|October|November|December'
 
+#errors
+class GeneralError(Exception):
+    """
+    General base class error
+    """
+
+class NoMask(GeneralError):
+    """
+    No mask set in the template
+    """
+
+class NoTarget(GeneralError):
+    """
+    No target set in the template
+    """
+
+class NotAllowedToEditPage(GeneralError):
+    """
+    The safe string has not been added to the page
+    """
+
 class IndexerBot:
     
     def __init__(self):
