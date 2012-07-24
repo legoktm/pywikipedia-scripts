@@ -38,6 +38,7 @@ class IndexerBot:
     
     def __init__(self):
         self.site = pywikibot.getSite()
+        self.logText = '\n'
     
     def fetchPages(self):
         """
@@ -361,8 +362,11 @@ class IndexerBot:
         generator = self.fetchPages()
         for page in generator:
             print 'Operating on %s.' % page.title()
+            self.logText += '* Processed [[%s]].' % page.title()
             instructions = self.parseInstructions(page)
             self.followInstructions(instructions)
+        logPage = pywikibot.Page(self.site, 'User:Legobot/Archive Log')
+        logPage.put(self.logText, 'Bot: Updating log')
             
 if __name__ == "__main__":
     bot = IndexerBot()
