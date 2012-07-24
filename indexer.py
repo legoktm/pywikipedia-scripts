@@ -362,9 +362,17 @@ class IndexerBot:
         generator = self.fetchPages()
         for page in generator:
             print 'Operating on %s.' % page.title()
-            self.logText += '* Processed [[%s]].' % page.title()
             instructions = self.parseInstructions(page)
-            self.followInstructions(instructions)
+            try:
+                self.followInstructions(instructions)
+                self.logText += '* Processed [[%s]].' % page.title()
+            except NoMask:
+                self.logText += '* ERROR: No mask specified on [[%s]]' % page.title()
+            except NoTarget:
+                self.logText += '* ERROR: No target specified on [[%s]]' % page.title()
+            except NotAllowedToEditPage:
+                self.logText += '* ERROR: Safe string has not been added for [[%s]]' % page.title()
+
         logPage = pywikibot.Page(self.site, 'User:Legobot/Archive Log')
         logPage.put(self.logText, 'Bot: Updating log')
             
