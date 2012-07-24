@@ -309,6 +309,29 @@ class IndexerBot:
         new_month = MONTH_NAMES[new_index]
         return new_month, year
         
+    def splitIntoThreads(self, text):
+        """
+        Inspired/Copied by/from pywikipedia/archivebot.py
+        """
+        lines = text.split('\n')
+        found = False
+        threads = list()
+        curThread = {}
+        for line in lines:
+            threadHeader = re.search('^== *([^=].*?) *== *$',line)
+            if threadHeader:
+                found = True
+                if curThread:
+                    threads.append(curThread)
+                    curThread = {}
+                curThread['topic'] = threadHeader.group(1)
+                curThread['content'] = ''
+            else:
+                if found:
+                    curThread['content'] += line + '\n'
+        if curThread:
+            threads.append(curThread)
+        return threads
         
     def parseArchive(self, page):
         """
@@ -327,19 +350,15 @@ class IndexerBot:
         """
         text = page.get()
         print 'Parsing %s.' % page.title()
+        threads = self.splitIntoThreads(text)
         data = list()
-        split = text.split('==')
-        if text.startswith('=='): #no lead text
-            key = 0
-        else:
-            key = 1
-        while key < len(split):
+        for thread in threads:
             d = {}
-            d['topic'] = split[key]
+            d['topic'] = thread['topic']
             while d['topic'].startswith(' '):
                 d['topic'] = d['topic'][1:]
             d['link'] = '[[%s#%s]]' % (page.title(), self.__cleanLinks(d['topic']))
-            content = split[key+1]
+            content = thread['content']
             d['content'] = content
             #hackish way of finding replies
             found = re.findall('\(UTC\)', content)
@@ -375,7 +394,6 @@ class IndexerBot:
                 d['duration'] = self.humanReadable(last - earliest)
                 d['durationsecs'] = last - earliest
             data.append(d)
-            key += 2
         return data
             
     def run(self):
