@@ -403,7 +403,6 @@ class IndexerBot:
             instructions = self.parseInstructions(page)
             try:
                 self.followInstructions(instructions)
-                self.logText += '* Processed [[%s]].' % page.title()
             except NoMask:
                 self.logText += '* ERROR: No mask specified on [[%s]]' % page.title()
             except NoTarget:
