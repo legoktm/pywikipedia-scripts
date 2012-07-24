@@ -259,7 +259,9 @@ class IndexerBot:
         while key < len(split):
             d = {}
             d['topic'] = split[key]
-            d['link'] = '[[%s#%s]]' % (page.title(), urllib.quote(d['topic'].encode('utf-8')))
+            while d['topic'].startswith(' '):
+                d['topic'] = d['topic'][1:]
+            d['link'] = '[[%s#%s]]' % (page.title(), self.__cleanLinks(d['topic']))
             content = split[key+1]
             d['content'] = content
             #hackish way of finding replies
