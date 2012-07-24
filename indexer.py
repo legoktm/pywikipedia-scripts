@@ -364,11 +364,11 @@ class IndexerBot:
             found = re.findall('\(UTC\)', content)
             d['replies'] = len(found)
             #find all the timestamps
-            ts = re.finditer('(\d\d:\d\d), (\d\d) (%s) (\d\d\d\d)' % MONTH_REGEX, content)
+            ts = re.finditer('(\d\d:\d\d|\d\d:\d\d:\d\d), (\d\d) (%s) (\d\d\d\d)' % MONTH_REGEX, content)
             epochs = list()
             for stamp in ts:
                 mw = stamp.group(0)
-                parsed = time.strptime(mw, '%H:%M, %d %B %Y')
+                parsed = self.mwToEpoch(mw)
                 epochs.append(calendar.timegm(parsed))
             earliest = 999999999999999999
             last = 0
