@@ -95,6 +95,12 @@ class IndexerBot:
             raise NoMask
         if not info.has_key('target'):
             raise NoTarget
+        #verify we can edit the target, otherwise just skip it
+        #hopefully this will save processing time
+        indexPage = pywikibot.Page(self.site, info['target'])
+        text = indexPage.get()
+        if not self.__okToEdit(text):
+            raise NotAllowedToEditPage
         #looks good, lets go
         data = {}
         #first process the mask
@@ -151,7 +157,6 @@ class IndexerBot:
             data['parsed'].extend(parsed)
         #build the index      
         indexText = self.__buildIndex(data['parsed'], data['template'])
-        indexPage = pywikibot.Page(self.site, info['target'])
         print 'Will edit %s' % indexPage.title()
         time.sleep(10)
         indexPage.put(indexText, 'BOT: Updating index (currently testing)')
@@ -168,6 +173,9 @@ class IndexerBot:
             search = re.search('\[\[(.*?)\]\]', link)
         link = urllib.quote(link)
         return link
+    
+    def __okToEdit(self, text):
+        return bool(re.search('<!-- (HBC Archive Indexerbot|Legobot) can blank this -->', text))
     
     def __buildIndex(self, parsedData, template):
         """
