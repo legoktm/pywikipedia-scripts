@@ -229,7 +229,7 @@ class IndexerBot:
             templateData['end'] = ''
         #print templateData
         #finished reading the template
-        indexText = ''
+        indexText = '<!-- HBC Archive Indexerbot can blank this -->'
         indexText += templateData['lead']
         indexText += templateData['header']
         alt = False
