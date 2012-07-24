@@ -140,7 +140,7 @@ class IndexerBot:
                     else:
                         keep_going = False
             elif '<month>' in mask:
-                if not info.has_key['first_archive']:
+                if not info.has_key('first_archive'):
                     raise InvalidMask
                 #grab the month and year out of the first archive
                 regex = mask.replace('<month>', '(%s)' % MONTH_REGEX).replace('<year>', '(\d\d\d\d)')
