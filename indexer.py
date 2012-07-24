@@ -189,8 +189,15 @@ class IndexerBot:
             data['parsed'].extend(parsed)
         #build the index      
         indexText = self.__buildIndex(data['parsed'], data['template'], info)
-        print 'Will edit %s' % indexPage.title()
-        indexPage.put(indexText, 'BOT: Updating index (currently testing)')
+        if self.__verifyUpdate(indexPageOldText, indexText):
+            print 'Will edit %s' % indexPage.title()
+            #pywikibot.showDiff(indexPageOldText, indexText)
+            indexPage.put(indexText, 'BOT: Updating index (currently testing)')
+            self.logText += '* Successfully indexed [[%s]] to [[%s]].' % (info['talkpage'].title(), indexPage.title())
+        else:
+            print 'Won\'t edit %s' % indexPage.title()
+            self.logText += '* Skipped indexing [[%s]] to [[%s]] since no update was needed.' % (info['talkpage'].title(), indexPage.title())
+
     
     def __cleanLinks(self, link):
         link = link.encode('utf-8')
@@ -279,8 +286,13 @@ class IndexerBot:
         indexText += templateData['end']
         return indexText
 
-
-            
+    def __verifyUpdate(self, old, new):
+        """
+        Verifies than an update is needed, and we won't be just updating the timestamp
+        """
+        old2 = re.sub('generated at (.*?) by', 'generated at ~~~~~ by', old)
+        new = new[:len(new)-2] # for some reason when getting the page text, the last linebreak is cutoff?
+        return old2 != new
         
     def __nextMonth(self, month, year):
         """
