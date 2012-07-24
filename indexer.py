@@ -69,6 +69,7 @@ class IndexerBot:
         key = text.find('{{User:HBC Archive Indexerbot/OptIn')
         data = text[key:].split('}}')[0][36:] #kinda scared about hardcoding so much
         info = {}
+        info['talkpage'] = page
         for param in data.split('|'):
             if param.startswith('target='):
                 info['target'] = param[7:]
@@ -81,7 +82,6 @@ class IndexerBot:
                 value = param[10:]
                 if value.lower() == 'yes':
                     info['indexhere'] = True
-                    info['talkpage'] = page
                 else:
                     info['indexhere'] = False
             elif param.startswith('template='):
