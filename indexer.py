@@ -46,6 +46,9 @@ class IndexerBot:
         #yield pages
         pass
         yield pywikibot.Page(self.site, 'User talk:Legoktm')
+        #template = pywikibot.Page(self.site, 'User:HBC Archive Indexerbot/OptIn')
+        #gen = pywikibot.pagegenerators.ReferringPageGenerator(template, onlyTemplateInclusion = True)
+        #return gen
     
     def epochToMW(self, timestamp):
         """
