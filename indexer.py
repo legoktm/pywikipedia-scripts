@@ -7,11 +7,8 @@ import calendar
 import urllib
 import datetime
 import pywikibot
-try:
-    import couchdb
-except ImportError:
-    couchdb = False
-    print 'WARNING: CACHING IS DISABLED'
+import couchdb
+
 
 #constants
 MONTH_NAMES = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')
@@ -39,8 +36,6 @@ class NotAllowedToEditPage(GeneralError):
     """
 
 def initialize_cache():
-    if not couchdb:
-        return
     couch = couchdb.Server()
     if not couch.__contains__('index_bot'):
         db = couch.create('index_bot')
@@ -74,8 +69,6 @@ class IndexerBot:
         
         Returns a tuple, first value is the page content, second is a boolean value which specifies if an update was required
         """
-        if not couchdb:
-            return self.parseArchive(page.get()), True # since we don't know, just assume it needs to be updated
         if page.title() in self.db:
             data = self.db[page.title()]
             old_revision_id = data['revision_id']
