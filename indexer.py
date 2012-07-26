@@ -7,6 +7,7 @@ import calendar
 import urllib
 import datetime
 import pywikibot
+import couchdb
 
 
 #constants
@@ -34,11 +35,20 @@ class NotAllowedToEditPage(GeneralError):
     The safe string has not been added to the page
     """
 
+def initialize_cache():
+    couch = couchdb.Server()
+    if not couch.__contains__('index_bot'):
+        db = couch.create('index_bot')
+    else:
+        db = couch['index_bot']
+        return db
+
 class IndexerBot:
     
     def __init__(self):
         self.site = pywikibot.getSite()
         self.logText = '\n'
+        self.db = initialize_cache()
     
     def fetchPages(self):
         """
@@ -51,6 +61,28 @@ class IndexerBot:
         #gen = pywikibot.pagegenerators.ReferringPageGenerator(template, onlyTemplateInclusion = True)
         #return gen
     
+    def fetchPage(self, page):
+        """
+        Checks if we need to fetch the page again from the wiki
+        Or whether the cached version is good enough
+        If it needs to update, it will also update the cache
+        
+        Returns a tuple, first value is the page content, second is a boolean value which specifies if an update was required
+        """
+        if page.title() in self.db:
+            data = self.db[page.title()]
+            old_revision_id = data['revision_id']
+            cur_revision_id = page.latestRevision()
+            if old_revision_id == cur_revision_id:
+                #same stuff!
+                return data['threads'], False
+        data = {}
+        parsed = self.parseArchive(page)
+        data['threads'] = parsed
+        data['revision_id'] = page.latestRevision()
+        self.db[page.title()] = data
+        return data['threads'], True
+        
     def epochToMW(self, timestamp):
         """
         Converts a unix epoch time to a mediawiki timestamp
@@ -184,9 +216,15 @@ class IndexerBot:
         #finished the template part    
         #lets parse all of the archives now
         data['parsed'] = list()
+        update_required = False
         for page in data['archives']:
-            parsed = self.parseArchive(page)
+            parsed,updated = self.fetchPage(page)
+            if updated:
+                update_required = True
             data['parsed'].extend(parsed)
+        if not update_required:
+            self.logText += '* [[%s]] did not require an update.' % info['talkpage'].title()
+            return
         #build the index      
         indexText = self.__buildIndex(data['parsed'], data['template'], info)
         if self.__verifyUpdate(indexPageOldText, indexText):
