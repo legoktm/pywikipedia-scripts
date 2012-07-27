@@ -8,6 +8,7 @@ import urllib
 import datetime
 import pywikibot
 import couchdb
+from couchdb.tools import dump as couchdb_dump
 
 
 #constants
@@ -42,6 +43,11 @@ def initialize_cache():
     else:
         db = couch['index_bot']
         return db
+
+def dump():
+    f = open('indexerbot.db', 'w')
+    couchdb_dump.dump_db('index_bot', output=f)
+    f.close()
 
 class IndexerBot:
     
@@ -452,6 +458,10 @@ class IndexerBot:
         logPage.put(self.logText, 'Bot: Updating log')
             
 if __name__ == "__main__":
-    bot = IndexerBot()
-    bot.run()
+    try:
+        bot = IndexerBot()
+        bot.run()
+    finally:
+        pywikibot.stopme()
+        dump()
                     
