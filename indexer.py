@@ -300,7 +300,7 @@ class IndexerBot:
             templateData['end'] = ''
         #print templateData
         #finished reading the template
-        indexText = '<!-- HBC Archive Indexerbot can blank this -->'
+        indexText = '<!-- Legobot can blank this -->'
         indexText += templateData['lead']
         reportInfo = 'Report generated based on a request from [[%s]]. It matches the following masks: ' % info['talkpage'].title()
         for mask in info['mask']:
