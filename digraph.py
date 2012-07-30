@@ -18,7 +18,7 @@ def logError(page):
         f.close()
     else:
         old = ''
-    new = old + u'[[%s]]' % page.title()
+    new = old + u'*[[%s]]\n' % page.title()
     f = open(logFile, 'w')
     try:
         f.write(new)
