@@ -9,6 +9,9 @@ if they were messed up AFC moves. If so, log them at [[Wikipedia:Articles for cr
 import pywikibot
 import pywikibot.data.api
 import datetime
+import legobot
+task = legobot.Task(13, 'Legobot')
+task.begin()
 site = pywikibot.getSite()
 
 def MovedPagesGenerator(ts, old_ts):
