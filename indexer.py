@@ -152,7 +152,10 @@ class IndexerBot:
             elif param.startswith('template='):
                 info['template'] = self.__findFront(param[9:].replace('\n',''))
             elif param.startswith('leading_zeros='):
-                info['leading_zeros'] = int(self.__findFront(param[14:]))
+                try:
+                    info['leading_zeros'] = int(self.__findFront(param[14:]))
+                except ValueError:
+                    pass
             elif param.startswith('first_archive='):
                 info['first_archive'] = self.__findFront(param[14:])
         #set default values if not already set
