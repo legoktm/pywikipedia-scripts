@@ -181,7 +181,11 @@ class IndexerBot:
         #verify we can edit the target, otherwise just skip it
         #hopefully this will save processing time
         indexPage = pywikibot.Page(self.site, info['target'])
-        indexPageOldText = indexPage.get()
+        try:
+            indexPageOldText = indexPage.get()
+        except pywikibot.exceptions.IsRedirectPage:
+            indexPage = indexPage.getRedirectTarget()
+            indexPageOldText = indexPage.get()
         if not self.__okToEdit(indexPageOldText):
             raise NotAllowedToEditPage
         #looks good, lets go
