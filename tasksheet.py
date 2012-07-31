@@ -58,7 +58,7 @@ class UpdateTaskSheetRobot:
                     #only update details
                     final[key]['details'] = new[key]['details']
                 else:
-                    final[key] == new[key]
+                    final[key] = new[key]
         return final
 
     def buildTemplate(self, info):
