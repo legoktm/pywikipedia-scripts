@@ -143,12 +143,17 @@ class IndexerBot:
                 else:
                     info['indexhere'] = False
             elif param.startswith('template='):
-                info['template'] = param[9:]
+                info['template'] = param[9:].replace('\n','')
             elif param.startswith('leading_zeros='):
                 info['leading_zeros'] = int(param[14:])
             elif param.startswith('first_archive='):
                 info['first_archive'] = param[14:]
         #set default values if not already set
+        for key in info.keys():
+            if type(info[key]) == type(u''):
+                if info[key].isspace() or (not info[key]):
+                    del info[key]
+        
         if not info.has_key('leading_zeros'):
             info['leading_zeros'] = 0
         if not info.has_key('indexhere'):
