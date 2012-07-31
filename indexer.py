@@ -189,6 +189,8 @@ class IndexerBot:
         except pywikibot.exceptions.IsRedirectPage:
             indexPage = indexPage.getRedirectTarget()
             indexPageOldText = indexPage.get()
+        except pywikibot.exceptions.NoPage:
+            raise NotAllowedToEditPage
         if not self.__okToEdit(indexPageOldText):
             raise NotAllowedToEditPage
         #looks good, lets go
