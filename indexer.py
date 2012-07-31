@@ -82,6 +82,8 @@ class IndexerBot:
             if old_revision_id == cur_revision_id:
                 #same stuff!
                 return data['threads'], False
+            else:
+                del self.db[page.title()]
         data = {}
         parsed = self.parseArchive(page)
         data['threads'] = parsed
