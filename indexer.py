@@ -107,7 +107,10 @@ class IndexerBot:
         try:
             return time.strptime(timestamp, '%H:%M, %d %B %Y')
         except ValueError:
-            return time.strptime(timestamp, '%H:%M:%S, %d %B %Y') # Some users (ex: Pathoschild) include seconds in their signature
+            try:
+                return time.strptime(timestamp, '%H:%M:%S, %d %B %Y') # Some users (ex: Pathoschild) include seconds in their signature
+            except ValueError:
+                return None #srsly wtf?
     
     def humanReadable(self, seconds):
         return str(datetime.timedelta(seconds=seconds))
@@ -434,7 +437,8 @@ class IndexerBot:
             for stamp in ts:
                 mw = stamp.group(0)
                 parsed = self.mwToEpoch(mw)
-                epochs.append(calendar.timegm(parsed))
+                if parsed:
+                    epochs.append(calendar.timegm(parsed))
             earliest = 999999999999999999
             last = 0
             for item in epochs:
