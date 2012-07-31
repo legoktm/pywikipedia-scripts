@@ -253,7 +253,7 @@ class IndexerBot:
         if self.__verifyUpdate(indexPageOldText, indexText):
             print 'Will edit %s' % indexPage.title()
             #pywikibot.showDiff(indexPageOldText, indexText)
-            indexPage.put(indexText, 'BOT: Updating index (currently testing)')
+            indexPage.put(indexText, 'BOT: Updating index (Trial [[Wikipedia:Bots/Requests for approval/Legobot 15|BRFA]])')
             self.logText += '* Successfully indexed [[%s]] to [[%s]].' % (info['talkpage'].title(), indexPage.title())
         else:
             print 'Won\'t edit %s' % indexPage.title()
