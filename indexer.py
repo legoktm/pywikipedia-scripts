@@ -121,15 +121,21 @@ class IndexerBot:
         key = text.find('{{User:HBC Archive Indexerbot/OptIn')
         data = text[key:].split('}}')[0][36:] #kinda scared about hardcoding so much
         info = {}
+        info['mask'] = []
         info['talkpage'] = page
         for param in data.split('|'):
+            while param.startswith(' '):
+                param = param[1:]
             if param.startswith('target='):
-                info['target'] = param[7:]
+                target = param[7:]
+                if target.startswith('/'):
+                    target = page.title() + target
+                info['target'] = target
             elif param.startswith('mask='):
-                if info.has_key('mask'):
-                    info['mask'].append(param[5:])
-                else:
-                    info['mask'] = [param[5:]]
+                mask = param[5:]
+                if mask.startswith('/'):
+                    mask = page.title() + mask
+                info['mask'].append(mask)
             elif param.startswith('indexhere='):
                 value = param[10:]
                 if value.lower() == 'yes':
