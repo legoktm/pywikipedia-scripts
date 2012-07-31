@@ -409,7 +409,11 @@ class IndexerBot:
             durationsecs - last-first (seconds)
         
         """
-        text = page.get()
+        try:
+            text = page.get()
+        except pywikibot.exceptions.IsRedirectPage:
+            redir_page = page.getRedirectTarget()
+            text = redir_page.get()
         print 'Parsing %s.' % page.title()
         threads = self.splitIntoThreads(text)
         data = list()
