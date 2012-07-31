@@ -115,6 +115,11 @@ class IndexerBot:
     def humanReadable(self, seconds):
         return str(datetime.timedelta(seconds=seconds))
     
+    def __findFront(self, item):
+        while item.startswith(' '):
+            item = item[1:]
+        return item
+    
     def parseInstructions(self, page):
         """
         Parses the index template for all of the parameters
@@ -127,30 +132,29 @@ class IndexerBot:
         info['mask'] = []
         info['talkpage'] = page
         for param in data.split('|'):
-            while param.startswith(' '):
-                param = param[1:]
+            param = self.__findFront(param)
             if param.startswith('target='):
-                target = param[7:]
+                target = self.__findFront(param[7:])
                 if target.startswith('/'):
                     target = page.title() + target
                 info['target'] = target
             elif param.startswith('mask='):
-                mask = param[5:]
+                mask = self.__findFront(param[5:])
                 if mask.startswith('/'):
                     mask = page.title() + mask
                 info['mask'].append(mask)
             elif param.startswith('indexhere='):
                 value = param[10:]
-                if value.lower() == 'yes':
+                if self.__findFront(value.lower()) == 'yes':
                     info['indexhere'] = True
                 else:
                     info['indexhere'] = False
             elif param.startswith('template='):
-                info['template'] = param[9:].replace('\n','')
+                info['template'] = self.__findFront(param[9:].replace('\n',''))
             elif param.startswith('leading_zeros='):
-                info['leading_zeros'] = int(param[14:])
+                info['leading_zeros'] = int(self.__findFront(param[14:]))
             elif param.startswith('first_archive='):
-                info['first_archive'] = param[14:]
+                info['first_archive'] = self.__findFront(param[14:])
         #set default values if not already set
         for key in info.keys():
             if type(info[key]) == type(u''):
