@@ -85,7 +85,7 @@ class Task:
             stat = 'bag_needed'
         elif '{{bottrialcomplete}}' in text:
             stat = 'complete'
-        elif '{{bottrial}}' in text:
+        elif '{{bottrial' in text:
             stat = 'trial'
         else:
             stat = 'unknown'
