@@ -17,7 +17,7 @@ REGEX = 'Revoked|Approved|Speedy|Denied|Withdrawn|Expired|TrialComplete|Trial|St
 
 
 class UpdateTaskSheetRobot:  
-    def __init__(self):
+    def __init__(self, bot):
         self.bot = bot
         self.site = pywikibot.getSite()
         self.taskPage = pywikibot.Page(self.site, 'User:%s/Tasks' % self.bot)
@@ -118,8 +118,8 @@ class UpdateTaskSheetRobot:
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        bot = sys.argv[1]
+        bot_name = sys.argv[1]
     else:
-        bot = 'Legobot'
-    bot = UpdateTaskSheetRobot(bot)
+        bot_name = 'Legobot'
+    bot = UpdateTaskSheetRobot(bot_name)
     bot.run()
