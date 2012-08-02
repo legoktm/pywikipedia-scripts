@@ -125,7 +125,7 @@ class IndexerBot:
         Parses the index template for all of the parameters
         """
         text = page.get()
-        print 'Parsing instructions'
+        print 'Parsing instructions.'
         key = text.find('{{User:HBC Archive Indexerbot/OptIn')
         data = text[key:].split('}}')[0][36:] #kinda scared about hardcoding so much
         #remove any comments (apparently users do this)
@@ -486,11 +486,15 @@ class IndexerBot:
             try:
                 self.followInstructions(instructions)
             except NoMask:
-                self.logText += '* ERROR: No mask specified on [[%s]]' % page.title()
+                self.logText += '* ERROR: No mask specified on [[%s]]\n' % page.title()
             except NoTarget:
-                self.logText += '* ERROR: No target specified on [[%s]]' % page.title()
+                self.logText += '* ERROR: No target specified on [[%s]]\n' % page.title()
             except NotAllowedToEditPage:
-                self.logText += '* ERROR: Safe string has not been added for [[%s]]' % page.title()
+                self.logText += '* ERROR: Safe string has not been added for [[%s]]\n' % page.title()
+            except KeyboardInterrupt:
+                raise KeyboardInterrupt
+            except:
+                self.logText += '* UNKNOWN ERROR: occured on [[%s]]\n.' % page.title()
 
         logPage = pywikibot.Page(self.site, 'User:Legobot/Archive Log')
         logPage.put(self.logText, 'Bot: Updating log')
