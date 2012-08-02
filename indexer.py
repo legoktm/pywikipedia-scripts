@@ -128,10 +128,14 @@ class IndexerBot:
         print 'Parsing instructions'
         key = text.find('{{User:HBC Archive Indexerbot/OptIn')
         data = text[key:].split('}}')[0][36:] #kinda scared about hardcoding so much
+        #remove any comments (apparently users do this)
+        clean = re.sub('<!--*.?-->', '', data)
+        if clean != data:
+            print 'Removed hidden option.'
         info = {}
         info['mask'] = []
         info['talkpage'] = page
-        for param in data.split('|'):
+        for param in clean.split('|'):
             param = self.__findFront(param)
             if param.startswith('target='):
                 target = self.__findFront(param[7:])
