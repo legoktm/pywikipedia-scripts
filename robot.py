@@ -70,7 +70,7 @@ class Robot:
             self.enabled = False
             return self.enabled
         config = config.lower()
-        search = re.search('%s: (.*?)\nenabled: (true|.*?)\n' % self.task, config)
+        search = re.search('%s: (.*?)\nenable: (true|.*?)\n' % self.task, config)
         if not search:
             self.enabled = False
         else:
