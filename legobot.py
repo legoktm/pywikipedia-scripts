@@ -21,8 +21,8 @@ BRFA = 'Wikipedia:Bots/Requests for approval/%(USERNAME)s %(ID)s'
 
 
 class Task:
-    def __init__(self, id, bot):
-        self.id = id
+    def __init__(self, task_id, bot):
+        self.id = task_id
         self.bot = bot
         self.data = {
             'USERNAME': self.bot,
