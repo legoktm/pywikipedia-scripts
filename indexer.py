@@ -82,6 +82,8 @@ class IndexerBot:
             if old_revision_id == cur_revision_id:
                 #same stuff!
                 return data['threads'], False
+            else:
+                del self.db[page.title()]
         data = {}
         parsed = self.parseArchive(page)
         data['threads'] = parsed
@@ -105,42 +107,67 @@ class IndexerBot:
         try:
             return time.strptime(timestamp, '%H:%M, %d %B %Y')
         except ValueError:
-            return time.strptime(timestamp, '%H:%M:%S, %d %B %Y') # Some users (ex: Pathoschild) include seconds in their signature
+            try:
+                return time.strptime(timestamp, '%H:%M:%S, %d %B %Y') # Some users (ex: Pathoschild) include seconds in their signature
+            except ValueError:
+                return None #srsly wtf?
     
     def humanReadable(self, seconds):
         return str(datetime.timedelta(seconds=seconds))
+    
+    def __findFront(self, item):
+        while item.startswith(' '):
+            item = item[1:]
+        return item
     
     def parseInstructions(self, page):
         """
         Parses the index template for all of the parameters
         """
         text = page.get()
-        print 'Parsing instructions'
+        print 'Parsing instructions.'
         key = text.find('{{User:HBC Archive Indexerbot/OptIn')
         data = text[key:].split('}}')[0][36:] #kinda scared about hardcoding so much
+        #remove any comments (apparently users do this)
+        clean = re.sub('<!--*.?-->', '', data)
+        if clean != data:
+            print 'Removed hidden option.'
         info = {}
+        info['mask'] = []
         info['talkpage'] = page
-        for param in data.split('|'):
+        for param in clean.split('|'):
+            param = self.__findFront(param)
             if param.startswith('target='):
-                info['target'] = param[7:]
+                target = self.__findFront(param[7:])
+                if target.startswith('/'):
+                    target = page.title() + target
+                info['target'] = target
             elif param.startswith('mask='):
-                if info.has_key('mask'):
-                    info['mask'].append(param[5:])
-                else:
-                    info['mask'] = [param[5:]]
+                mask = self.__findFront(param[5:])
+                if mask.startswith('/'):
+                    mask = page.title() + mask
+                info['mask'].append(mask)
             elif param.startswith('indexhere='):
                 value = param[10:]
-                if value.lower() == 'yes':
+                if self.__findFront(value.lower()) == 'yes':
                     info['indexhere'] = True
                 else:
                     info['indexhere'] = False
             elif param.startswith('template='):
-                info['template'] = param[9:]
+                info['template'] = self.__findFront(param[9:].replace('\n',''))
             elif param.startswith('leading_zeros='):
-                info['leading_zeros'] = int(param[14:])
+                try:
+                    info['leading_zeros'] = int(self.__findFront(param[14:]))
+                except ValueError:
+                    pass
             elif param.startswith('first_archive='):
-                info['first_archive'] = param[14:]
+                info['first_archive'] = self.__findFront(param[14:])
         #set default values if not already set
+        for key in info.keys():
+            if type(info[key]) == type(u''):
+                if info[key].isspace() or (not info[key]):
+                    del info[key]
+        
         if not info.has_key('leading_zeros'):
             info['leading_zeros'] = 0
         if not info.has_key('indexhere'):
@@ -168,7 +195,13 @@ class IndexerBot:
         #verify we can edit the target, otherwise just skip it
         #hopefully this will save processing time
         indexPage = pywikibot.Page(self.site, info['target'])
-        indexPageOldText = indexPage.get()
+        try:
+            indexPageOldText = indexPage.get()
+        except pywikibot.exceptions.IsRedirectPage:
+            indexPage = indexPage.getRedirectTarget()
+            indexPageOldText = indexPage.get()
+        except pywikibot.exceptions.NoPage:
+            raise NotAllowedToEditPage
         if not self.__okToEdit(indexPageOldText):
             raise NotAllowedToEditPage
         #looks good, lets go
@@ -236,7 +269,7 @@ class IndexerBot:
         if self.__verifyUpdate(indexPageOldText, indexText):
             print 'Will edit %s' % indexPage.title()
             #pywikibot.showDiff(indexPageOldText, indexText)
-            indexPage.put(indexText, 'BOT: Updating index (currently testing)')
+            indexPage.put_async(indexText, 'BOT: Updating index (Trial [[Wikipedia:Bots/Requests for approval/Legobot 15|BRFA]])')
             self.logText += '* Successfully indexed [[%s]] to [[%s]].' % (info['talkpage'].title(), indexPage.title())
         else:
             print 'Won\'t edit %s' % indexPage.title()
@@ -392,7 +425,11 @@ class IndexerBot:
             durationsecs - last-first (seconds)
         
         """
-        text = page.get()
+        try:
+            text = page.get()
+        except pywikibot.exceptions.IsRedirectPage:
+            redir_page = page.getRedirectTarget()
+            text = redir_page.get()
         print 'Parsing %s.' % page.title()
         threads = self.splitIntoThreads(text)
         data = list()
@@ -413,7 +450,8 @@ class IndexerBot:
             for stamp in ts:
                 mw = stamp.group(0)
                 parsed = self.mwToEpoch(mw)
-                epochs.append(calendar.timegm(parsed))
+                if parsed:
+                    epochs.append(calendar.timegm(parsed))
             earliest = 999999999999999999
             last = 0
             for item in epochs:
@@ -448,11 +486,15 @@ class IndexerBot:
             try:
                 self.followInstructions(instructions)
             except NoMask:
-                self.logText += '* ERROR: No mask specified on [[%s]]' % page.title()
+                self.logText += '* ERROR: No mask specified on [[%s]]\n' % page.title()
             except NoTarget:
-                self.logText += '* ERROR: No target specified on [[%s]]' % page.title()
+                self.logText += '* ERROR: No target specified on [[%s]]\n' % page.title()
             except NotAllowedToEditPage:
-                self.logText += '* ERROR: Safe string has not been added for [[%s]]' % page.title()
+                self.logText += '* ERROR: Safe string has not been added for [[%s]]\n' % page.title()
+            except KeyboardInterrupt:
+                raise KeyboardInterrupt
+            except:
+                self.logText += '* UNKNOWN ERROR: occured on [[%s]]\n.' % page.title()
 
         logPage = pywikibot.Page(self.site, 'User:Legobot/Archive Log')
         logPage.put(self.logText, 'Bot: Updating log')

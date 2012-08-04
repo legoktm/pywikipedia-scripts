@@ -8,21 +8,22 @@ import pywikibot
 # (C) Legoktm 2012 under the MIT License
 # See https://en.wikipedia.org/w/index.php?title=Wikipedia:Bot_requests&oldid=503238261#narrow_down_digraph_redirects for details
 
-global TRIAL_COUNT
-TRIAL_COUNT = 0
 site = pywikibot.getSite()
 
 def logError(page):
     logFile = 'errors.txt'
     if os.path.isfile(logFile):
         f = open(logFile, 'r')
-        old = f.read()
+        old = unicode(f.read())
         f.close()
     else:
         old = ''
-    new = old + u'[[%s]]' % page.title()
+    new = old + u'*[[%s]]\n' % page.title()
     f = open(logFile, 'w')
-    f.write(new)
+    try:
+        f.write(new)
+    except UnicodeEncodeError:
+        print 'UnicodeError on logging'
     f.close()
     print u'*Logged an error on [[%s]]' % page.title()
 
@@ -39,10 +40,6 @@ def parseSection(section):
         processPage(page, target)
 
 def processPage(pg, target):
-    global TRIAL_COUNT
-    if TRIAL_COUNT > 25:
-        print 'Over trial, ending.'
-        sys.exit(0)
     pg = pg.replace('[[','').replace(']]','') #de-wikilink
     page = pywikibot.Page(site, pg)
     shouldBeText = '#REDIRECT [[List of Latin-script digraphs#%s]]' % target
@@ -59,7 +56,6 @@ def processPage(pg, target):
                 #not pointing at the right section, lets fix that
                 print '*Fixed [[%s]]' % page.title()
                 page.put(shouldBeText, 'BOT: Fixing section link in redirect.')
-                TRIAL_COUNT += 1
                 return
             #page is redirecting somewhere else? log as an error and lets continue    
             logError(page)
@@ -70,7 +66,6 @@ def processPage(pg, target):
     #page doesn't exist, lets create it!
     print '*Created [[%s]]' % page.title()
     page.put(shouldBeText, 'BOT: Creating redirect for digraph')
-    TRIAL_COUNT += 1
     
 
 def main():

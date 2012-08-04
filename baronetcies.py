@@ -6,28 +6,64 @@
 #
 # Will mass move all non-redirect articles to their lower-case variants
 
+import sys
+import os
 import pywikibot
-
+TRIAL_COUNT = 25
 site = pywikibot.getSite()
 REASON = 'BOT: Moving %s to %s per [[Talk:Abdy_Baronets#Requested_move|RM]]'
+LOGFILE = 'movepages.log'
+
+def log(old_title, new_title):
+    global LOGFILE
+    if os.path.isfile(LOGFILE):
+        f = open(LOGFILE, 'r')
+        old = f.read()
+        f.close()
+    else:
+        old = ''
+    msg = '*[[:%s]] --> [[:%s]]\n' % (old_title, new_title)
+    f = open(LOGFILE, 'w')
+    f.write(old+msg)
+    f.close()
+    
+    
 
 def do_page(page):
+    global TRIAL_COUNT
+    if TRIAL_COUNT >= 50:
+        print 'Trial over.'
+        sys.exit(0)
     old_title = page.title()
-    if page.isRedirect():
+    if page.isRedirectPage():
         print 'Skipping %s, it\'s a redirect' % page.title()
         return
     if not 'Baronets' in old_title:
-        print 'Skipping %s, doesnt contain \'Baronets\' in it.'
+        print 'Skipping %s, doesnt contain \'Baronets\' in it.' % page.title()
+        return
     new_title = old_title.replace('Baronets', 'baronets')
+    if old_title == new_title:
+        print 'New title is same as old title? logging.'
+        log(old_title, new_title)
     edit_summary = REASON % (old_title, new_title)
-    print 'Moving: %s --> %s' % old_title, new_title
-    page.move(new_title, reason=edit_summary, movetalkpage=True)
+    print 'Moving: %s --> %s' % (old_title, new_title)
+    try:
+        page.move(new_title, reason=edit_summary, movetalkpage=True)
+    except pywikibot.exceptions.Error, e:
+        print e
+        log(old_title, new_title)
+        return
+        
+    TRIAL_COUNT += 1
+    if page.toggleTalkPage().exists():
+        TRIAL_COUNT += 1
+    
     
         
 
 def main():
     cat = pywikibot.Category(pywikibot.Page(site, 'Category:Baronetcies'))
-    gen = pywikibot.pagenerators.CategorizedPageGenerator(cat)
+    gen = pywikibot.pagegenerators.CategorizedPageGenerator(cat)
     for page in gen:
         do_page(page)
 
