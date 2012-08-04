@@ -6,9 +6,10 @@
 #
 # Will mass move all non-redirect articles to their lower-case variants
 
+import sys
 import os
 import pywikibot
-
+TRIAL_COUNT = 25
 site = pywikibot.getSite()
 REASON = 'BOT: Moving %s to %s per [[Talk:Abdy_Baronets#Requested_move|RM]]'
 LOGFILE = 'movepages.log'
@@ -29,6 +30,10 @@ def log(old_title, new_title):
     
 
 def do_page(page):
+    global TRIAL_COUNT
+    if TRIAL_COUNT >= 50:
+        print 'Trial over.'
+        sys.exit(0)
     old_title = page.title()
     if page.isRedirectPage():
         print 'Skipping %s, it\'s a redirect' % page.title()
@@ -48,12 +53,16 @@ def do_page(page):
         print e
         log(old_title, new_title)
         return
+        
+    TRIAL_COUNT += 1
+    if page.toggleTalkPage().exists():
+        TRIAL_COUNT += 1
+    
     
         
 
 def main():
     cat = pywikibot.Category(pywikibot.Page(site, 'Category:Baronetcies'))
-    gen = pywikibot.pagenerators.CategorizedPageGenerator(cat)
     gen = pywikibot.pagegenerators.CategorizedPageGenerator(cat)
     for page in gen:
         do_page(page)
