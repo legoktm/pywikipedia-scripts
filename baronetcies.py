@@ -6,16 +6,13 @@
 #
 # Will mass move all non-redirect articles to their lower-case variants
 
-import sys
 import os
 import pywikibot
+import robot
 TRIAL_COUNT = 25
-site = pywikibot.getSite()
-REASON = 'BOT: Moving %s to %s per [[Talk:Abdy_Baronets#Requested_move|RM]]'
-LOGFILE = 'movepages.log'
 
 def log(old_title, new_title):
-    global LOGFILE
+    LOGFILE = 'movepages.log'
     if os.path.isfile(LOGFILE):
         f = open(LOGFILE, 'r')
         old = f.read()
@@ -27,49 +24,50 @@ def log(old_title, new_title):
     f.write(old+msg)
     f.close()
     
-    
 
-def do_page(page):
-    global TRIAL_COUNT
-    if TRIAL_COUNT >= 50:
-        print 'Trial over.'
-        sys.exit(0)
-    old_title = page.title()
-    if page.isRedirectPage():
-        print 'Skipping %s, it\'s a redirect' % page.title()
-        return
-    if not 'Baronets' in old_title:
-        print 'Skipping %s, doesnt contain \'Baronets\' in it.' % page.title()
-        return
-    new_title = old_title.replace('Baronets', 'baronets')
-    if old_title == new_title:
-        print 'New title is same as old title? logging.'
-        log(old_title, new_title)
-    edit_summary = REASON % (old_title, new_title)
-    print 'Moving: %s --> %s' % (old_title, new_title)
-    try:
-        page.move(new_title, reason=edit_summary, movetalkpage=True)
-    except pywikibot.exceptions.Error, e:
-        print e
-        log(old_title, new_title)
-        return
-        
-    TRIAL_COUNT += 1
-    if page.toggleTalkPage().exists():
-        TRIAL_COUNT += 1
-    
-    
-        
 
-def main():
-    cat = pywikibot.Category(pywikibot.Page(site, 'Category:Baronetcies'))
-    gen = pywikibot.pagegenerators.CategorizedPageGenerator(cat)
-    for page in gen:
-        do_page(page)
+class RMBot(robot.Robot):
+    
+    def __init__(self):
+        robot.Robot.__init__(self, task=16)
+        self.start_trial(50)
+        self.reason = 'BOT: Moving %s to %s per [[Talk:Abdy_Baronets#Requested_move|RM]]'
+
+    def run(self):
+        cat = pywikibot.Category(pywikibot.Page(self.site, 'Category:Baronetcies'))
+        gen = pywikibot.pagegenerators.CategorizedPageGenerator(cat)
+        for page in gen:
+            self.do_page(page)
+
+    def do_page(self, page):
+        old_title = page.title()
+        if page.isRedirectPage():
+            self.output('Skipping %s, it\'s a redirect' % page.title())
+            return
+        if not 'Baronets' in old_title:
+            self.output('Skipping %s, doesnt contain \'Baronets\' in it.' % page.title())
+            return
+        new_title = old_title.replace('Baronets', 'baronets')
+        if old_title == new_title:
+            self.output('New title is same as old title? logging.')
+            log(old_title, new_title)
+        edit_summary = self.reason % (old_title, new_title)
+        self.output('Moving: %s --> %s' % (old_title, new_title))
+        try:
+            if not self.isEnabled():
+                self.output('Disabled, quitting.')
+                self.quit()
+            page.move(new_title, reason=edit_summary, movetalkpage=True)
+            self.trial_action()
+        except pywikibot.exceptions.Error, e:
+            self.output(e)
+            log(old_title, new_title)
+            return
+            
+        if page.toggleTalkPage().exists():
+            self.trial_action()
+
 
 if __name__ == "__main__":
-    try:
-        main()
-    finally:
-        pywikibot.stopme()
-    
+    bot = RMBot()
+    bot.run()
