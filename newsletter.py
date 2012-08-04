@@ -15,15 +15,15 @@ summary = 'User:Legoktm/summary.css'
 site = pywikibot.getSite()
 
 def main():
-	spamlist = pywikibot.Page(site, list).get()
-	text = pywikibot.Page(site, message).get()
-	editMsg = pywikibot.Page(site, summary).get()
-	#Parse the list	
-	list = re.compile(r'\[\[(.*?)\]\]', re.IGNORECASE).sub(r'\1', spamlist)
-	for title in list:
-		pg = pywikbot.Page(site, title)
-		pg.put(text, editMsg, minorEdit=False)
+    spamlist = pywikibot.Page(site, list).get()
+    text = pywikibot.Page(site, message).get()
+    editMsg = pywikibot.Page(site, summary).get()
+    #Parse the list    
+    list = re.compile(r'\[\[(.*?)\]\]', re.IGNORECASE).sub(r'\1', spamlist)
+    for title in list:
+        pg = pywikbot.Page(site, title)
+        pg.put(text, editMsg, minorEdit=False)
 
 
 if __name__ == "__main__":
-	main()
+    main()
