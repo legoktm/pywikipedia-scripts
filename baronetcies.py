@@ -54,6 +54,7 @@ def do_page(page):
 def main():
     cat = pywikibot.Category(pywikibot.Page(site, 'Category:Baronetcies'))
     gen = pywikibot.pagenerators.CategorizedPageGenerator(cat)
+    gen = pywikibot.pagegenerators.CategorizedPageGenerator(cat)
     for page in gen:
         do_page(page)
 
