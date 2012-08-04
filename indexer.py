@@ -1,20 +1,26 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
+import sys
 import re
 import time
 import calendar
 import urllib
 import datetime
-import pywikibot
 import couchdb
 from couchdb.tools import dump as couchdb_dump
+import threading
+import Queue
+import pywikibot
+
+
 
 
 #constants
 MONTH_NAMES = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')
-MONTH_REGEX = 'January|February|March|April|May|June|July|August|September|October|November|December'
-
+MONTH_REGEX = '|'.join(month for month in MONTH_NAMES)
+SITE = pywikibot.getSite()
+LOG_TEXT = ''
 #errors
 class GeneralError(Exception):
     """
@@ -49,24 +55,93 @@ def dump():
     couchdb_dump.dump_db('index_bot', output=f)
     f.close()
 
-class IndexerBot:
+
+
+
+class ParseThread(threading.Thread):
     
-    def __init__(self):
-        self.site = pywikibot.getSite()
-        self.logText = '\n'
+    def __init__(self, queue):
+        threading.Thread.__init__(self)
+        self.queue = queue
+    
+    def run(self):
+        while True:
+            page = self.queue.get()
+            self.parseInstructions(page)
+            print 'Finished parsing instructions for [[%s]].' % page.title()
+            self.queue.task_done()
+    
+    def parseInstructions(self, page):
+        """
+        Parses the index template for all of the parameters
+        """
+        text = page.get()
+        print 'Parsing instructions for [[%s]].' % page.title()
+        key = text.find('{{User:HBC Archive Indexerbot/OptIn')
+        data = text[key:].split('}}')[0][36:] #kinda scared about hardcoding so much
+        #remove any comments (apparently users do this)
+        clean = pywikibot.removeDisabledParts(data)
+        info = {}
+        info['mask'] = []
+        info['talkpage'] = page
+        for param in clean.split('|'):
+            param = self.__findFront(param)
+            if param.startswith('target='):
+                target = self.__findFront(param[7:])
+                if target.startswith('/'):
+                    target = page.title() + target
+                info['target'] = target
+            elif param.startswith('mask='):
+                mask = self.__findFront(param[5:])
+                if mask.startswith('/'):
+                    mask = page.title() + mask
+                info['mask'].append(mask)
+            elif param.startswith('indexhere='):
+                value = param[10:]
+                if self.__findFront(value.lower()) == 'yes':
+                    info['indexhere'] = True
+                else:
+                    info['indexhere'] = False
+            elif param.startswith('template='):
+                info['template'] = self.__findFront(param[9:].replace('\n',''))
+            elif param.startswith('leading_zeros='):
+                try:
+                    info['leading_zeros'] = int(self.__findFront(param[14:]))
+                except ValueError:
+                    pass
+            elif param.startswith('first_archive='):
+                info['first_archive'] = self.__findFront(param[14:])
+        #set default values if not already set
+        for key in info.keys():
+            if type(info[key]) == type(u''):
+                if info[key].isspace() or (not info[key]):
+                    del info[key]
+        
+        if not info.has_key('leading_zeros'):
+            info['leading_zeros'] = 0
+        if not info.has_key('indexhere'):
+            info['indexhere'] = False
+        if not info.has_key('template'):
+            info['template'] = 'User:HBC Archive Indexerbot/default template'
+        global processQueue
+        processQueue.put(info)
+
+    def __findFront(self, item):
+        while item.startswith(' '):
+            item = item[1:]
+        return item
+
+
+
+
+
+class ProcessThread(threading.Thread):
+    
+    def __init__(self, queue):
+        threading.Thread.__init__(self)
+        self.queue = queue
         self.db = initialize_cache()
-    
-    def fetchPages(self):
-        """
-        A generator for pages transcluding the template
-        """
-        #yield pages
-        pass
-        yield pywikibot.Page(self.site, 'User talk:Legoktm')
-        #template = pywikibot.Page(self.site, 'User:HBC Archive Indexerbot/OptIn')
-        #gen = pywikibot.pagegenerators.ReferringPageGenerator(template, onlyTemplateInclusion = True)
-        #return gen
-    
+        
     def fetchPage(self, page):
         """
         Checks if we need to fetch the page again from the wiki
@@ -120,61 +195,6 @@ class IndexerBot:
             item = item[1:]
         return item
     
-    def parseInstructions(self, page):
-        """
-        Parses the index template for all of the parameters
-        """
-        text = page.get()
-        print 'Parsing instructions.'
-        key = text.find('{{User:HBC Archive Indexerbot/OptIn')
-        data = text[key:].split('}}')[0][36:] #kinda scared about hardcoding so much
-        #remove any comments (apparently users do this)
-        clean = re.sub('<!--*.?-->', '', data)
-        if clean != data:
-            print 'Removed hidden option.'
-        info = {}
-        info['mask'] = []
-        info['talkpage'] = page
-        for param in clean.split('|'):
-            param = self.__findFront(param)
-            if param.startswith('target='):
-                target = self.__findFront(param[7:])
-                if target.startswith('/'):
-                    target = page.title() + target
-                info['target'] = target
-            elif param.startswith('mask='):
-                mask = self.__findFront(param[5:])
-                if mask.startswith('/'):
-                    mask = page.title() + mask
-                info['mask'].append(mask)
-            elif param.startswith('indexhere='):
-                value = param[10:]
-                if self.__findFront(value.lower()) == 'yes':
-                    info['indexhere'] = True
-                else:
-                    info['indexhere'] = False
-            elif param.startswith('template='):
-                info['template'] = self.__findFront(param[9:].replace('\n',''))
-            elif param.startswith('leading_zeros='):
-                try:
-                    info['leading_zeros'] = int(self.__findFront(param[14:]))
-                except ValueError:
-                    pass
-            elif param.startswith('first_archive='):
-                info['first_archive'] = self.__findFront(param[14:])
-        #set default values if not already set
-        for key in info.keys():
-            if type(info[key]) == type(u''):
-                if info[key].isspace() or (not info[key]):
-                    del info[key]
-        
-        if not info.has_key('leading_zeros'):
-            info['leading_zeros'] = 0
-        if not info.has_key('indexhere'):
-            info['indexhere'] = False
-        if not info.has_key('template'):
-            info['template'] = 'User:HBC Archive Indexerbot/default template'
-        return info
     def __prefixNumber(self, num, leading):
         """
         Prefixes "num" with %leading zeroes.
@@ -194,7 +214,7 @@ class IndexerBot:
             raise NoTarget
         #verify we can edit the target, otherwise just skip it
         #hopefully this will save processing time
-        indexPage = pywikibot.Page(self.site, info['target'])
+        indexPage = pywikibot.Page(SITE, info['target'])
         try:
             indexPageOldText = indexPage.get()
         except pywikibot.exceptions.IsRedirectPage:
@@ -216,7 +236,7 @@ class IndexerBot:
                 while keep_going:
                     archive_num = self.__prefixNumber(key, info['leading_zeros'])
                     title = mask.replace('<#>', archive_num)
-                    page = pywikibot.Page(self.site, title)
+                    page = pywikibot.Page(SITE, title)
                     key += 1
                     if page.exists():
                         data['archives'].append(page)
@@ -233,24 +253,24 @@ class IndexerBot:
                 keep_going = True
                 while keep_going:
                     title = mask.replace('<month>', month).replace('<year>', str(year))
-                    page = pywikibot.Page(self.site, title)
+                    page = pywikibot.Page(SITE, title)
                     if page.exists():
                         data['archives'].append(page)
                         month, year = self.__nextMonth(month, year)
                     else:
                         keep_going = False
             else: #assume the mask is the page
-                page = pywikibot.Page(self.site, mask)
+                page = pywikibot.Page(SITE, mask)
                 if page.exists():
                     data['archives'].append(page)
         if info['indexhere']:
             data['archives'].append(info['talkpage'])
         #finished the mask processing!
         #now verify the template exists
-        template = pywikibot.Page(self.site, info['template'])
+        template = pywikibot.Page(SITE, info['template'])
         if not template.exists():
             #fallback on the default template
-            template = pywikibot.Page(self.site, 'User:HBC Archive Indexerbot/default template')
+            template = pywikibot.Page(SITE, 'User:HBC Archive Indexerbot/default template')
         data['template'] = template.get()
         #finished the template part    
         #lets parse all of the archives now
@@ -261,19 +281,20 @@ class IndexerBot:
             if updated:
                 update_required = True
             data['parsed'].extend(parsed)
+        global LOG_TEXT
         if not update_required:
-            self.logText += '* [[%s]] did not require an update.' % info['talkpage'].title()
+            LOG_TEXT += '* [[%s]] did not require an update.\n' % info['talkpage'].title()
             return
         #build the index      
         indexText = self.__buildIndex(data['parsed'], data['template'], info)
         if self.__verifyUpdate(indexPageOldText, indexText):
-            print 'Will edit %s' % indexPage.title()
+            print '>>>Will edit %s' % indexPage.title()
             #pywikibot.showDiff(indexPageOldText, indexText)
             indexPage.put_async(indexText, 'BOT: Updating index (Trial [[Wikipedia:Bots/Requests for approval/Legobot 15|BRFA]])')
-            self.logText += '* Successfully indexed [[%s]] to [[%s]].' % (info['talkpage'].title(), indexPage.title())
+            LOG_TEXT += '* Successfully indexed [[%s]] to [[%s]].\n' % (info['talkpage'].title(), indexPage.title())
         else:
-            print 'Won\'t edit %s' % indexPage.title()
-            self.logText += '* Skipped indexing [[%s]] to [[%s]] since no update was needed.' % (info['talkpage'].title(), indexPage.title())
+            print '>>>Won\'t edit %s' % indexPage.title()
+            LOG_TEXT += '* Skipped indexing [[%s]] to [[%s]] since no update was needed.\n' % (info['talkpage'].title(), indexPage.title())
 
     
     def __cleanLinks(self, link):
@@ -306,7 +327,7 @@ class IndexerBot:
         Reads the template and creates the index for it
         """
         #first lets read the template
-        print 'Building the index'
+        #print 'Building the index.' 
         templateData = {}
         key = template.find('<nowiki>')
         lastKey = template.find('</nowiki>')
@@ -479,31 +500,44 @@ class IndexerBot:
         return data
             
     def run(self):
-        generator = self.fetchPages()
-        for page in generator:
-            print 'Operating on %s.' % page.title()
-            instructions = self.parseInstructions(page)
+        while True:
+            global LOG_TEXT
+            instructions = self.queue.get()
             try:
+                print '>>>Beginning to operate on [[%s]].' % page.title()
                 self.followInstructions(instructions)
             except NoMask:
-                self.logText += '* ERROR: No mask specified on [[%s]]\n' % page.title()
+                LOG_TEXT += '* ERROR: No mask specified on [[%s]]\n' % page.title()
             except NoTarget:
-                self.logText += '* ERROR: No target specified on [[%s]]\n' % page.title()
+                LOG_TEXT += '* ERROR: No target specified on [[%s]]\n' % page.title()
             except NotAllowedToEditPage:
-                self.logText += '* ERROR: Safe string has not been added for [[%s]]\n' % page.title()
+                LOG_TEXT += '* ERROR: Safe string has not been added for [[%s]]\n' % page.title()
             except KeyboardInterrupt:
-                raise KeyboardInterrupt
-            except:
-                self.logText += '* UNKNOWN ERROR: occured on [[%s]]\n.' % page.title()
+                sys.exit(0)
+            #except:
+            #    LOG_TEXT += '* UNKNOWN ERROR: occured on [[%s]]\n.' % page.title()
+            print '>>>Finished operating on [[%s]].' % page.title()
+            self.queue.task_done()
 
-        logPage = pywikibot.Page(self.site, 'User:Legobot/Archive Log')
-        logPage.put(self.logText, 'Bot: Updating log')
-            
+
 if __name__ == "__main__":
-    try:
-        bot = IndexerBot()
-        bot.run()
-    finally:
-        pywikibot.stopme()
-        dump()
+    startQueue = Queue.Queue()
+    processQueue = Queue.Queue()
+    for i in range(10):
+        p = ProcessThread(processQueue)
+        p.setDaemon(True)
+        p.start()
+        t = ParseThread(startQueue)
+        t.setDaemon(True)
+        t.start()
+    template = pywikibot.Page(SITE, 'User:HBC Archive Indexerbot/OptIn')
+    gen = pywikibot.pagegenerators.ReferringPageGenerator(template, onlyTemplateInclusion = True, content = True)
+    for page in gen:
+        startQueue.put(page)
+    #startQueue.join()
+    processQueue.join()
+    logPage = pywikibot.Page(SITE, 'User:Legobot/Archive Log')
+    logPage.put(LOG_TEXT, 'Bot: Updating log')
+    
+
                     
