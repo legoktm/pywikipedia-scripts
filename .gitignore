@@ -1,2 +1,7 @@
 .svn/*
 i18n/*
+#eclipse
+.project
+.pydevproject
+.settings
+
