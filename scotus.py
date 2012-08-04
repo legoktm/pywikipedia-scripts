@@ -7,7 +7,7 @@
 import re
 import pywikibot
 
-CASE = re.compile('(.*?)v.(.*)')
+CASE = re.compile('(.*?)\sv.\s(.*)')
 REDIR_TEXT = '#REDIRECT [[%s]]\n{{R from modification}}'
 
 class RedirectBot:
