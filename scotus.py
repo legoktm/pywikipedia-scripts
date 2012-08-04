@@ -7,7 +7,7 @@
 import re
 import pywikibot
 
-CASE = re.compile('(.*?)v.(.*)')
+CASE = re.compile('(.*?)\sv.\s(.*)')
 REDIR_TEXT = '#REDIRECT [[%s]]\n{{R from modification}}'
 
 class RedirectBot:
@@ -21,10 +21,10 @@ class RedirectBot:
         print text
         
     def process_page(self, page):
-        if page.isRedirect():
+        if page.isRedirectPage():
             self.log('* Skipping [[%s]] since it is a redirect.' % page.title())
             return
-        elif page.namespace != 0:
+        elif page.namespace() != 0:
             self.log('* Skipping [[:%s]] since it is not in the mainspace.' % page.title())
             return
         match = re.search(CASE, page.title())
@@ -33,8 +33,8 @@ class RedirectBot:
             return
         redir_title = page.title().replace(' v. ', ' v ')
         redir = pywikibot.Page(self.site, redir_title)
-        if page.exists():
-            self.log('* Error: [[:%s]] already exists. Skipping.' % page.title())
+        if redir.exists():
+            self.log('* Error: [[:%s]] already exists. Skipping.' % redir.title())
             return
         text = REDIR_TEXT % page.title()
         redir.put(text, 'BOT: Creating redirect for alternate punctuation')
