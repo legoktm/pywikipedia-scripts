@@ -5,21 +5,18 @@
 # Automagically manages [[User:Legobot/Tasks]]
 # Currently in alpha status
 #
-# Syntax: python tasksheet.py Legobot
-# Just replace Legobot with the name of your bot
 
-import sys
 import re
 import pywikibot
-from legobot import *
-
+import robot
 REGEX = 'Revoked|Approved|Speedy|Denied|Withdrawn|Expired|TrialComplete|Trial|Status'
+BRFA = 'Wikipedia:Bots/Requests for approval/%s %s'
 
+class UpdateTaskSheetRobot(robot.Robot):
 
-class UpdateTaskSheetRobot:  
-    def __init__(self, bot):
-        self.bot = bot
-        self.site = pywikibot.getSite()
+    def __init__(self):
+        robot.Robot.__init__(self, 0)
+        self.bot = 'Legobot'
         self.taskPage = pywikibot.Page(self.site, 'User:%s/Tasks' % self.bot)
         
     def parseCurrentTasks(self):
@@ -36,13 +33,13 @@ class UpdateTaskSheetRobot:
             if line.startswith('{{BotTask|'):
                 search = re.search('\|1=(\d|\d\d)\|2=(%s)\|3=(in|)active\|4=(.*?)}}' % REGEX, line)
                 if search:
-                    id = int(search.group(1))
+                    t_id = int(search.group(1))
                     d = {
                          'brfa_result': search.group(2),
                          'status': search.group(3) + 'active',
                          'details': search.group(4),
                     }
-                    data[id] = d
+                    data[t_id] = d
         return data
     
     def mergeData(self, old, new):
@@ -71,22 +68,19 @@ class UpdateTaskSheetRobot:
         return pageContent
     
     def fetchNewData(self):
-        data = {'USERNAME':self.bot}
-        data['ID'] = 1
+        task = 1
         info = {}
-        keep_going = True
-        while keep_going:
-            if data['ID'] == 1:
-                data['ID'] = ''
-                brfa_page = pywikibot.Page(self.site, BRFA % data)
-                data['ID'] = 1
+        while True:
+            if task == 1:
+                task = ''
+                brfa_page = pywikibot.Page(self.site, BRFA % (self.bot, task))
+                task = 1
             else:
-                brfa_page = pywikibot.Page(self.site, BRFA % data)
+                brfa_page = pywikibot.Page(self.site, BRFA % (self.bot, task))
             if not brfa_page.exists():
-                keep_going = False
-                continue
-            task = Task(data['ID'], data['USERNAME'])
-            brfa_result = task.brfaStatus()
+                break
+            brfa_text = brfa_page.get()
+            brfa_result = self.brfaStatus(brfa_text)
             if brfa_result in ('op_needed', 'bag_needed','unknown'):
                 brfa_result = 'Status'
             elif brfa_result == 'complete':
@@ -103,9 +97,35 @@ class UpdateTaskSheetRobot:
                 'status': status,
                 'details': details,
             }
-            info[data['ID']] = t_data
-            data['ID'] += 1
+            info[task] = t_data
+            task += 1
         return info
+    
+    def brfaStatus(self, text):
+        text = text.lower()
+        if '{{botrevoked}}' in text:
+            stat = 'revoked'
+        elif '{{botapproved}}' in text:
+            stat = 'approved'
+        elif '{{botspeedy}}' in text:
+            stat = 'speedy'
+        elif '{{botdenied}}' in text:
+            stat = 'denied'
+        elif '{{botwithdrawn}}' in text:
+            stat = 'withdrawn'
+        elif '{{botexpired}}' in text:
+            stat = 'expired'
+        elif '{{operatorassistanceneeded}}' in text:
+            stat = 'op_needed'
+        elif '{{bagassistanceneeded}}' in text:
+            stat = 'bag_needed'
+        elif '{{bottrialcomplete}}' in text:
+            stat = 'complete'
+        elif '{{bottrial' in text:
+            stat = 'trial'
+        else:
+            stat = 'unknown'
+        return stat
     
     def run(self):
         old = self.parseCurrentTasks()
@@ -117,9 +137,5 @@ class UpdateTaskSheetRobot:
         self.taskPage.put(content, 'BOT: Updating list of tasks in userspace')
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2:
-        bot_name = sys.argv[1]
-    else:
-        bot_name = 'Legobot'
-    bot = UpdateTaskSheetRobot(bot_name)
+    bot = UpdateTaskSheetRobot()
     bot.run()
