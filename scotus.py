@@ -7,15 +7,17 @@
 import sys
 import re
 import pywikibot
+import robot
 
 
 CASE = re.compile('(.*?)\sv.\s(.*)')
 REDIR_TEXT = '#REDIRECT [[%s]]\n{{R from modification}}'
 
-class RedirectBot:
+class RedirectBot(robot.Robot):
     
     def __init__(self):
-        self.site = pywikibot.getSite()
+        robot.Robot.__init(self, task=17)
+        self.setAction('BOT: Creating redirect for alternate punctuation')
         self.logText = ''
     
     def log(self, text):
@@ -39,7 +41,7 @@ class RedirectBot:
             self.log('* Error: [[:%s]] already exists. Skipping.' % redir.title())
             return
         text = REDIR_TEXT % page.title()
-        redir.put(text, 'BOT: Creating redirect for alternate punctuation')
+        self.edit(redir, text, async=True)
         self.log('* Success: [[:%s]] points to [[:%s]].' % (redir.title(), page.title()))
         
     
