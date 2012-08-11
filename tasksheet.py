@@ -67,6 +67,17 @@ class UpdateTaskSheetRobot(robot.Robot):
         pageContent += '|}'
         return pageContent
     
+    def functionSummary(self, text):
+        found = re.findall("'''Function Summary:''' (.*?)\n", text)
+        try:
+            return found[0]
+        except IndexError:
+            try:
+                found = re.findall("'''Function (o|O)verview:''' (.*?)\n", text)
+                return found[0][1]
+            except IndexError:
+                return ''
+    
     def fetchNewData(self):
         task = 1
         info = {}
@@ -81,6 +92,7 @@ class UpdateTaskSheetRobot(robot.Robot):
                 break
             brfa_text = brfa_page.get()
             brfa_result = self.brfaStatus(brfa_text)
+            details = self.functionSummary(brfa_text)
             if brfa_result in ('op_needed', 'bag_needed','unknown'):
                 brfa_result = 'Status'
             elif brfa_result == 'complete':
@@ -91,7 +103,6 @@ class UpdateTaskSheetRobot(robot.Robot):
                 status = 'inactive'
             else:
                 status = 'active'
-            details = task.functionSummary()
             t_data = {
                 'brfa_result': brfa_result,
                 'status': status,

@@ -9,7 +9,6 @@
 import os
 import pywikibot
 import robot
-TRIAL_COUNT = 25
 
 def log(old_title, new_title):
     LOGFILE = 'movepages.log'
@@ -30,7 +29,6 @@ class RMBot(robot.Robot):
     
     def __init__(self):
         robot.Robot.__init__(self, task=16)
-        self.start_trial(50)
         self.reason = 'BOT: Moving %s to %s per [[Talk:Abdy_Baronets#Requested_move|RM]]'
 
     def run(self):
@@ -58,15 +56,11 @@ class RMBot(robot.Robot):
                 self.output('Disabled, quitting.')
                 self.quit()
             page.move(new_title, reason=edit_summary, movetalkpage=True)
-            self.trial_action()
         except pywikibot.exceptions.Error, e:
             self.output(e)
             log(old_title, new_title)
             return
             
-        if page.toggleTalkPage().exists():
-            self.trial_action()
-
 
 if __name__ == "__main__":
     bot = RMBot()

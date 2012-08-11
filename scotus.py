@@ -4,8 +4,10 @@
 # (C) Legoktm 2012 under the MIT License
 # See https://en.wikipedia.org/w/index.php?title=Wikipedia:Bot_requests&oldid=505208009#Create_a_lot_of_unpunctuated_redirects for details
 
+import sys
 import re
 import pywikibot
+
 
 CASE = re.compile('(.*?)\sv.\s(.*)')
 REDIR_TEXT = '#REDIRECT [[%s]]\n{{R from modification}}'
