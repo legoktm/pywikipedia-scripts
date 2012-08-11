@@ -137,6 +137,17 @@ class UpdateTaskSheetRobot(robot.Robot):
         else:
             stat = 'unknown'
         return stat
+
+    def functionSummary(self, text):
+        found = re.findall("'''Function Summary:''' (.*?)\n", text)
+        try:
+            return found[0]
+        except IndexError:
+            try:
+                found = re.findall("'''Function (o|O)verview:''' (.*?)\n", text)
+                return found[0][1]
+            except IndexError:
+                return ''
     
     def run(self):
         old = self.parseCurrentTasks()
