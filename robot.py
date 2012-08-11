@@ -42,7 +42,7 @@ class Robot:
             self.quit()
         if not summary:
             summary = self.summary
-        elif async:
+        if async:
             page.put_async(text, summary, minorEdit=minorEdit)
         else:
             page.put(text, summary, minorEdit=minorEdit)
