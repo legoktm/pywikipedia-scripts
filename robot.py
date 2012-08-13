@@ -26,12 +26,27 @@ class Robot:
         self.summary = None
         self.task = task
         self.site = pywikibot.getSite()
-    
+        self.loggingEnabled = False
     def setAction(self, text):
         self.summary = text
     
+    def startLogging(self, logPage):
+        self.loggingEnabled = True
+        self.logPage = logPage
+        self.logText = ''
+    
+    def pushLog(self, overwrite=False):
+        if (not overwrite) and self.logPage.exists():
+            old = self.logPage.get()
+            self.logText = old + self.logText
+        self.logPage.put(self.logText, 'BOT: Updating log')
+        self.loggingEnabled = False
+        self.logText = ''
+        
     def output(self, text):
         #nothing fancy here yet, will be used later to implement better logging
+        if self.loggingEnabled:
+            self.logText += text
         print text
     
             
