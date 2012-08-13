@@ -6,7 +6,7 @@ Code state: alpha
 Goal: A comprehensive helper script for User:Legobot
 Built on top of the pywikibot framework
 Current Requirements:
-    Configuration page set up at 'User:Legobot/Configuration'
+    Configuration page set up at 'User:USERNAME/Configuration'
     pywikibot-rewrite framework installed
 Currently supports:
     An on-wiki configuration subpage.
@@ -33,10 +33,8 @@ import re
 import time
 import pywikibot
 
-#use pywikibot.config to get username
-CONFIGURATION_PAGE = 'User:Legobot/Configuration'
-BRFA = 'Wikipedia:Bots/Requests for approval/%s %s'
-
+CONFIGURATION_PAGE = 'User:%s/Configuration'
+CHECK_CONFIG_PAGE_EVERY = 10 #edits
 
 class Robot:
     
@@ -46,9 +44,13 @@ class Robot:
         self.trial_counter = 0
         self.trial_max = 0
         self.summary = None
+        self.username = self.site.username()
+        self.CONFIGURATION_PAGE = CONFIGURATION_PAGE % self.username
         self.task = task
         self.site = pywikibot.getSite()
         self.loggingEnabled = False
+        self.counter = 0
+        self.CHECK_CONFIG_PAGE_EVERY = CHECK_CONFIG_PAGE_EVERY
     def setAction(self, text):
         self.summary = text
     
@@ -74,9 +76,13 @@ class Robot:
             
         
     def edit(self, page, text, summary=False, async=False, force = False, minorEdit=False):
-        if not self.isEnabled() and not force:
-            self.output('Run-page is disabled. Quitting.')
-            self.quit()
+        if not force:
+            if self.counter >= self.CHECK_CONFIG_PAGE_EVERY:
+                if not self.isEnabled():
+                    self.output('Run-page is disabled. Quitting.')
+                    self.quit(1)
+                else:
+                    self.counter = 0
         if not summary:
             summary = self.summary
         if async:
@@ -100,13 +106,16 @@ class Robot:
         if self.task == 0: #override for non-filed tasks
             self.enabled = True
             return self.enabled
-        page = pywikibot.Page(self.site, CONFIGURATION_PAGE)
+        page = pywikibot.Page(self.site, self.CONFIGURATION_PAGE)
         try:
             config = page.get()
         except pywikibot.exceptions.NoPage:
             self.enabled = False
             return self.enabled
         config = config.lower()
+        if 'enable: all' in config: #be careful...
+            self.enabled = True
+            return self.enabled
         search = re.search('%s: (.*?)\nenable(|d): (true|.*?)\n' % self.task, config)
         if not search:
             self.enabled = False
@@ -114,12 +123,7 @@ class Robot:
             self.enabled = (search.group(3).lower() == 'true')
         return self.enabled
     
-    def quit(self):
+    def quit(self, status=0):
         #something fancy to go here later
-        sys.exit()
+        sys.exit(status)
     
-    
-allTasks = ['afcmove', 'baronetcies', 'datebot', 'pui', 'vitalarticles']
-#pseudocode
-#for task in allTasks:
-#    task.run()
