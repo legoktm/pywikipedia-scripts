@@ -83,6 +83,8 @@ class Robot:
                     self.quit(1)
                 else:
                     self.counter = 0
+            else:
+                self.counter += 1
         if not summary:
             summary = self.summary
         if async:
