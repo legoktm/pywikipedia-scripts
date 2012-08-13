@@ -85,11 +85,11 @@ class Robot:
             self.enabled = False
             return self.enabled
         config = config.lower()
-        search = re.search('%s: (.*?)\nenable: (true|.*?)\n' % self.task, config)
+        search = re.search('%s: (.*?)\nenable(|d): (true|.*?)\n' % self.task, config)
         if not search:
             self.enabled = False
         else:
-            self.enabled = (search.group(2).lower() == 'true')
+            self.enabled = (search.group(3).lower() == 'true')
         return self.enabled
     
     def quit(self):
