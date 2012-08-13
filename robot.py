@@ -1,15 +1,37 @@
 #!/usr/bin/env python
 
 # (C) Legoktm, 2012 under the MIT License
-#
-# Status: pre-alpha
-# Goal: Second attempt at building a comprehensive helper script for User:Legobot
-# Built on top of the pywikibot framework
-#
+"""
+Code state: alpha
+Goal: A comprehensive helper script for User:Legobot
+Built on top of the pywikibot framework
+Current Requirements:
+    Configuration page set up at 'User:Legobot/Configuration'
+    pywikibot-rewrite framework installed
+Currently supports:
+    An on-wiki configuration subpage.
+    
+Usage:
+import pywikibot
+import robot
+class TaskRobot(robot.Robot):
+    def __init__(self):
+       robot.Robot.__init__(self, task=1)
+    def run(self):
+        page = pywikibot.Page(self.site, 'Wikipedia:Sandbox')
+        text = 'This is a test'
+        msg = 'BOT: Edit summary'
+        self.edit(page, text, msg)
+if __name__ == "__main__":
+    bot = TaskRobot()
+    bot.run()
+
+"""
 
 import sys
-import pywikibot
 import re
+import time
+import pywikibot
 
 #use pywikibot.config to get username
 CONFIGURATION_PAGE = 'User:Legobot/Configuration'
