@@ -24,12 +24,10 @@ class OldidGABot(robot.Robot):
         page = talk_page.toggleTalkPage()
         #find the edit where {{good article}] was added
         foundOldid = False
-        fetch = 0
         oldid = None
         real_oldid = None
         while not foundOldid:
-            fetch += 10
-            hist = page.fullVersionHistory(total=fetch)
+            hist = page.fullVersionHistory(total=10, startid=oldid)
             for revision in hist:
                 if re.search('\{\{(good|ga) article\}\}', revision[3], re.IGNORECASE):
                     oldid = revision[0]
@@ -38,9 +36,10 @@ class OldidGABot(robot.Robot):
                     foundOldid = True
                     break
         #add the oldid in the template
+        self.output('Working on %s' % talk_page.title())
         oldtext = talk_page.get()
-        search = re.search('\{\{GA(.*?)\}\}', oldtext)
-        newtext = oldtext.replace(search.group(0), '{{GA%s|oldid=%s}}' % (search.group(1), oldid))
+        search = re.search('\{\{GA\|(.*?)\}\}', oldtext)
+        newtext = oldtext.replace(search.group(0), '{{GA|%s|oldid=%s}}' % (search.group(1), oldid))
         pywikibot.showDiff(oldtext, newtext)
         time.sleep(10)
         talk_page.put(newtext, 'BOT: Adding |oldid=%s to {{[[Template:GA|GA]]}}' % oldid)
