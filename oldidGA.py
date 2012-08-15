@@ -36,7 +36,7 @@ class OldidGABot(robot.Robot):
                     foundOldid = True
                     break
         #add the oldid in the template
-        self.output('Working on %s' % talk_page.title())
+        self.output('* Adding |oldid=%s to [[%s]]' % (oldid, talk_page.title()))
         oldtext = talk_page.get()
         search = re.search('\{\{GA\|(.*?)\}\}', oldtext)
         newtext = oldtext.replace(search.group(0), '{{GA|%s|oldid=%s}}' % (search.group(1), oldid))
