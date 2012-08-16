@@ -70,13 +70,18 @@ class UpdateTaskSheetRobot(robot.Robot):
     def functionSummary(self, text):
         found = re.findall("'''Function Summary:''' (.*?)\n", text)
         try:
-            return found[0]
+            real = found[0]
         except IndexError:
             try:
                 found = re.findall("'''Function (o|O)verview:''' (.*?)\n", text)
-                return found[0][1]
+                real = found[0][1]
             except IndexError:
-                return ''
+                real = ''
+        #clean up
+        search = re.search('\|(.*?)=', real)
+        if search:
+            real = real.replace(search.group(0), '{{!}}%s=' % search.group(1))
+        return real
     
     def fetchNewData(self):
         task = 1
@@ -137,17 +142,6 @@ class UpdateTaskSheetRobot(robot.Robot):
         else:
             stat = 'unknown'
         return stat
-
-    def functionSummary(self, text):
-        found = re.findall("'''Function Summary:''' (.*?)\n", text)
-        try:
-            return found[0]
-        except IndexError:
-            try:
-                found = re.findall("'''Function (o|O)verview:''' (.*?)\n", text)
-                return found[0][1]
-            except IndexError:
-                return ''
     
     def run(self):
         old = self.parseCurrentTasks()
