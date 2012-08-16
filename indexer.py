@@ -2,13 +2,13 @@
 #-*- coding: utf-8 -*-
 
 import sys
+import os
 import re
 import time
 import calendar
 import urllib
 import datetime
-import couchdb
-from couchdb.tools import dump as couchdb_dump
+import sqlite3
 import threading
 import Queue
 import pywikibot
@@ -42,41 +42,86 @@ class NotAllowedToEditPage(GeneralError):
     The safe string has not been added to the page
     """
 
-def initialize_cache():
-    couch = couchdb.Server()
-    if not couch.__contains__('index_bot'):
-        db = couch.create('index_bot')
-    else:
-        db = couch['index_bot']
-        return db
+def initialize_db():
+    if os.path.isfile('indexerbot.db'):
+        return
+    conn = sqlite3.connect('indexerbot.db')
+    cur = conn.cursor()
+    cur.execute('CREATE TABLE cache(pagename TEXT, revid INT)')
+    conn.commit()
+    conn.close()
 
-def dump():
-    f = open('indexerbot.db', 'w')
-    couchdb_dump.dump_db('index_bot', output=f)
-    f.close()
+initialize_db()
 
 
 
 
-class ParseThread(threading.Thread):
+class ProcessThread(threading.Thread):
     
     def __init__(self, queue):
         threading.Thread.__init__(self)
         self.queue = queue
+        
+        
+    def fetchPage(self, page):
+        """
+        Checks if we need to fetch the page again from the wiki
+        Or whether the cached version is good enough
+        If it needs to update, it will also update the cache
+        
+        Returns a boolean value, False if no update is required, True if needed.
+        """
+        self.conn = sqlite3.connect('indexerbot.db')
+        self.conn.row_factory = sqlite3.Row
+        self.cur = self.conn.cursor()
+        self.cur.execute("SELECT revid FROM cache WHERE pagename=?", [page.title()])
+        rows = self.cur.fetchall()
+        latestRev = page.latestRevision()
+        if rows:
+            revid = rows[0][0]
+            print 'revid: %s, latestRev: %s' % (revid, latestRev)
+            if revid == latestRev:
+                self.conn.close()
+                return False
+            else:
+                self.cur.execute("UPDATE cache SET revid=? WHERE pagename=?", [latestRev, page.title()])
+        else:
+            print '%s added to db.' % page.title()
+            self.cur.execute("INSERT INTO cache VALUES (?, ?)", [page.title(), latestRev])
+        self.conn.commit()
+        self.conn.close()
+        return True
     
-    def run(self):
-        while True:
-            page = self.queue.get()
-            self.parseInstructions(page)
-            print 'Finished parsing instructions for [[%s]].' % page.title()
-            self.queue.task_done()
+    def clean(self, text):
+        """various cleaning functions to simplify parsing bad text"""
+        
+        #first lets eliminate any whitespace in the front
+        text = self.__findFront(text)
+        # clean up when people do |indehere=<yes>
+        search = re.search('(.*?)=\<(#|yes|no|month|year|.*?)\>', text)
+        if search:
+            front = search.group(1) + '='
+            if search.group(2) in ['#', 'month', 'year']:
+                pass
+            elif search.group(2) in ['yes', 'no'] :
+                text = search.group(2)
+            else:
+                text = search.group(2)
+            text = front + text
+        #remove wikilinks from everything
+        search = re.search('\[\[(.*?)\]\]', text)
+        if search:
+            text = text.replace(search.group(0), search.group(1))
+        return text
+                
+        
     
     def parseInstructions(self, page):
         """
         Parses the index template for all of the parameters
         """
         text = page.get()
-        print 'Parsing instructions for [[%s]].' % page.title()
+        #print 'Parsing instructions for [[%s]].' % page.title()
         key = text.find('{{User:HBC Archive Indexerbot/OptIn')
         data = text[key:].split('}}')[0][36:] #kinda scared about hardcoding so much
         #remove any comments (apparently users do this)
@@ -85,32 +130,32 @@ class ParseThread(threading.Thread):
         info['mask'] = []
         info['talkpage'] = page
         for param in clean.split('|'):
-            param = self.__findFront(param)
+            param = self.clean(param)
             if param.startswith('target='):
-                target = self.__findFront(param[7:])
+                target = self.clean(param[7:])
                 if target.startswith('/'):
                     target = page.title() + target
                 info['target'] = target
             elif param.startswith('mask='):
-                mask = self.__findFront(param[5:])
+                mask = self.clean(param[5:])
                 if mask.startswith('/'):
                     mask = page.title() + mask
                 info['mask'].append(mask)
             elif param.startswith('indexhere='):
                 value = param[10:]
-                if self.__findFront(value.lower()) == 'yes':
+                if self.clean(value.lower()) == 'yes':
                     info['indexhere'] = True
                 else:
                     info['indexhere'] = False
             elif param.startswith('template='):
-                info['template'] = self.__findFront(param[9:].replace('\n',''))
+                info['template'] = self.clean(param[9:].replace('\n',''))
             elif param.startswith('leading_zeros='):
                 try:
-                    info['leading_zeros'] = int(self.__findFront(param[14:]))
+                    info['leading_zeros'] = int(self.clean(param[14:]))
                 except ValueError:
                     pass
             elif param.startswith('first_archive='):
-                info['first_archive'] = self.__findFront(param[14:])
+                info['first_archive'] = self.clean(param[14:])
         #set default values if not already set
         for key in info.keys():
             if type(info[key]) == type(u''):
@@ -123,8 +168,9 @@ class ParseThread(threading.Thread):
             info['indexhere'] = False
         if not info.has_key('template'):
             info['template'] = 'User:HBC Archive Indexerbot/default template'
-        global processQueue
-        processQueue.put(info)
+        if info['template'] == 'template location':
+            info['template'] = 'User:HBC Archive Indexerbot/default template'
+        return info
 
     def __findFront(self, item):
         while item.startswith(' '):
@@ -132,40 +178,6 @@ class ParseThread(threading.Thread):
         return item
 
 
-
-
-
-class ProcessThread(threading.Thread):
-    
-    def __init__(self, queue):
-        threading.Thread.__init__(self)
-        self.queue = queue
-        self.db = initialize_cache()
-        
-    def fetchPage(self, page):
-        """
-        Checks if we need to fetch the page again from the wiki
-        Or whether the cached version is good enough
-        If it needs to update, it will also update the cache
-        
-        Returns a tuple, first value is the page content, second is a boolean value which specifies if an update was required
-        """
-        if page.title() in self.db:
-            data = self.db[page.title()]
-            old_revision_id = data['revision_id']
-            cur_revision_id = page.latestRevision()
-            if old_revision_id == cur_revision_id:
-                #same stuff!
-                return data['threads'], False
-            else:
-                del self.db[page.title()]
-        data = {}
-        parsed = self.parseArchive(page)
-        data['threads'] = parsed
-        data['revision_id'] = page.latestRevision()
-        self.db[page.title()] = data
-        return data['threads'], True
-        
     def epochToMW(self, timestamp):
         """
         Converts a unix epoch time to a mediawiki timestamp
@@ -260,6 +272,9 @@ class ProcessThread(threading.Thread):
                     else:
                         keep_going = False
             else: #assume the mask is the page
+                if ('<' in mask) or ('>' in mask):
+                    print 'ERRORERROR: Did not parse %s properly.' % mask
+                    continue
                 page = pywikibot.Page(SITE, mask)
                 if page.exists():
                     data['archives'].append(page)
@@ -276,15 +291,22 @@ class ProcessThread(threading.Thread):
         #lets parse all of the archives now
         data['parsed'] = list()
         update_required = False
+        caching_only = '--buildcache' in sys.argv
         for page in data['archives']:
-            parsed,updated = self.fetchPage(page)
+            updated = self.fetchPage(page)
             if updated:
                 update_required = True
-            data['parsed'].extend(parsed)
+                if not caching_only:
+                    break
+        if caching_only:
+            return
         global LOG_TEXT
         if not update_required:
             LOG_TEXT += '* [[%s]] did not require an update.\n' % info['talkpage'].title()
             return
+        for page in data['archives']:
+            parsed = self.parseArchive(page)
+            data['parsed'].extend(parsed)
         #build the index      
         indexText = self.__buildIndex(data['parsed'], data['template'], info)
         if self.__verifyUpdate(indexPageOldText, indexText):
@@ -501,8 +523,9 @@ class ProcessThread(threading.Thread):
             
     def run(self):
         while True:
+            page = self.queue.get()
+            instructions = self.parseInstructions(page)
             global LOG_TEXT
-            instructions = self.queue.get()
             try:
                 print '>>>Beginning to operate on [[%s]].' % page.title()
                 self.followInstructions(instructions)
@@ -514,6 +537,8 @@ class ProcessThread(threading.Thread):
                 LOG_TEXT += '* ERROR: Safe string has not been added for [[%s]]\n' % page.title()
             except KeyboardInterrupt:
                 sys.exit(0)
+            except Exception, e:
+                LOG_TEXT += 'general error: %s\noccurred on %s' % (e, page.title())
             #except:
             #    LOG_TEXT += '* UNKNOWN ERROR: occured on [[%s]]\n.' % page.title()
             print '>>>Finished operating on [[%s]].' % page.title()
@@ -521,23 +546,27 @@ class ProcessThread(threading.Thread):
 
 
 if __name__ == "__main__":
-    startQueue = Queue.Queue()
-    processQueue = Queue.Queue()
-    for i in range(10):
-        p = ProcessThread(processQueue)
-        p.setDaemon(True)
-        p.start()
-        t = ParseThread(startQueue)
-        t.setDaemon(True)
-        t.start()
-    template = pywikibot.Page(SITE, 'User:HBC Archive Indexerbot/OptIn')
-    gen = pywikibot.pagegenerators.ReferringPageGenerator(template, onlyTemplateInclusion = True, content = True)
-    for page in gen:
-        startQueue.put(page)
-    #startQueue.join()
-    processQueue.join()
-    logPage = pywikibot.Page(SITE, 'User:Legobot/Archive Log')
-    logPage.put(LOG_TEXT, 'Bot: Updating log')
+    try:
+        startQueue = Queue.Queue()
+        template = pywikibot.Page(SITE, 'User:HBC Archive Indexerbot/OptIn')
+        gen = pywikibot.pagegenerators.ReferringPageGenerator(template, onlyTemplateInclusion = True, content = True)
+        for page in gen:
+            startQueue.put(page)
+        #startQueue.put(pywikibot.Page(SITE, 'Talk:The Doon School'))
+    
+        for i in range(10):
+            p = ProcessThread(startQueue)
+            p.setDaemon(True)
+            p.start()
+        startQueue.join()
+        #logPage = pywikibot.Page(SITE, 'User:Legobot/Archive Log')
+        #logPage.put(LOG_TEXT, 'Bot: Updating log')
+    finally:
+        f = open('error_log.txt', 'w')
+        f.write(LOG_TEXT)
+        f.close()
+    
+    
     
 
                     
