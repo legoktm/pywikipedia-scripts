@@ -51,6 +51,7 @@ class Robot:
         self.loggingEnabled = False
         self.counter = 0
         self.CHECK_CONFIG_PAGE_EVERY = CHECK_CONFIG_PAGE_EVERY
+        self.args = pywikibot.handleArgs()
     def setAction(self, text):
         self.summary = text
     
@@ -68,9 +69,10 @@ class Robot:
         self.logText = ''
         
     def output(self, text):
-        #nothing fancy here yet, will be used later to implement better logging
         if self.loggingEnabled:
             self.logText += text
+            if not text.endswith('\n'):
+                self.logText += '\n'
         print text
     
             
