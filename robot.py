@@ -27,7 +27,7 @@ if __name__ == "__main__":
     bot.run()
 
 """
-
+from __future__ import unicode_literals
 import sys
 import re
 import time
@@ -73,7 +73,7 @@ class Robot:
             self.logText += text
             if not text.endswith('\n'):
                 self.logText += '\n'
-        print text
+        pywikibot.output(text)
     
             
         

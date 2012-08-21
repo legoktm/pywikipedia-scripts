@@ -3,7 +3,7 @@
 
 # (C) Legoktm 2012 under the MIT License
 # See https://en.wikipedia.org/w/index.php?title=Wikipedia:Bot_requests&oldid=505208009#Create_a_lot_of_unpunctuated_redirects for details
-
+from __future__ import unicode_literals
 import sys
 import re
 import pywikibot
