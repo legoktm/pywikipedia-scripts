@@ -68,8 +68,8 @@ class Robot:
         self.loggingEnabled = False
         self.logText = ''
         
-    def output(self, text):
-        if self.loggingEnabled:
+    def output(self, text,debug=False):
+        if self.loggingEnabled and not debug:
             self.logText += text
             if not text.endswith('\n'):
                 self.logText += '\n'

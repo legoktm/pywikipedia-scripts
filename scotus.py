@@ -16,13 +16,13 @@ REDIR_TEXT = '#REDIRECT [[%s]]\n{{R from modification}}'
 class RedirectBot(robot.Robot):
     
     def __init__(self):
-        robot.Robot.__init(self, task=17)
+        robot.Robot.__init__(self, task=17)
         self.setAction('BOT: Creating redirect for alternate punctuation')
     
         
     def process_page(self, page):
         if page.isRedirectPage():
-            self.output('* Skipping [[%s]] since it is a redirect.' % page.title())
+            self.output('* Skipping [[%s]] since it is a redirect.' % page.title(),debug=True)
             return
         elif page.namespace() != 0:
             self.output('* Skipping [[:%s]] since it is not in the mainspace.' % page.title())
@@ -34,7 +34,7 @@ class RedirectBot(robot.Robot):
         redir = pywikibot.Page(self.site, redir_title)
         if redir.exists():
             if not redir.getCreator() == 'Legobot':
-                self.output('* Error: [[:%s]] already exists. Skipping.' % redir.title())
+                self.output('* Error: [[:%s]] already exists. Skipping.' % redir.title(),debug=True)
             return
         text = REDIR_TEXT % page.title()
         self.edit(redir, text, async=True)
@@ -56,4 +56,4 @@ if __name__ == "__main__":
     try:
         bot.run()
     finally:
-        bot.putLog()
+        bot.pushLog()
