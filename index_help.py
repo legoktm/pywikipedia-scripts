@@ -379,16 +379,20 @@ def parseArchive(page):
         data.append(d)
     return data
 
-def splitIntoThreads(text):
+def splitIntoThreads(text, level3=False):
     """
     Inspired/Copied by/from pywikipedia/archivebot.py
     """
+    if level3:
+        regex = '^=== *([^=].*?) *=== *$'
+    else:
+        regex = '^== *([^=].*?) *== *$'
     lines = text.split('\n')
     found = False
     threads = list()
     curThread = {}
     for line in lines:
-        threadHeader = re.search('^== *([^=].*?) *== *$',line)
+        threadHeader = re.search(regex,line)
         if threadHeader:
             found = True
             if curThread:
@@ -401,6 +405,8 @@ def splitIntoThreads(text):
                 curThread['content'] += line + '\n'
     if curThread:
         threads.append(curThread)
+    if not threads:
+        threads = splitIntoThreads(text, level3=True)
     return threads
 
 def __cleanLinks(link):
