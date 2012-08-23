@@ -326,19 +326,17 @@ def parseArchive(page):
         durationsecs - last-first (seconds)
     
     """
-    try:
-        text = page.get()
-    except pywikibot.exceptions.IsRedirectPage:
-        redir_page = page.getRedirectTarget()
-        text = redir_page.get()
+    tmp_page = page
+    while tmp_page.isRedirectPage():
+        tmp_page = tmp_page.getRedirectTarget()
+    text = tmp_page.get()
     print 'Parsing %s.' % page.title()
     threads = splitIntoThreads(text)
     data = list()
     for thread in threads:
         d = {}
         d['topic'] = thread['topic']
-        while d['topic'].startswith(' '):
-            d['topic'] = d['topic'][1:]
+        d['topic'] = __findFront(d['topic'])
         d['link'] = '[[%s#%s]]' % (page.title(), __cleanLinks(d['topic']))
         content = thread['content']
         d['content'] = content
