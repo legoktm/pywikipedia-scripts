@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 import sys
 import os
@@ -83,7 +84,14 @@ class IndexBot(robot.Robot):
             self.buildInstructionDB(updateList, update=True)
     
     def fetchWatchlist(self):
-        dayago = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+        days = 1
+        for arg in self.args:
+            if arg.startswith('--days'):
+                try:
+                    days = int(arg[7:])
+                except ValueError:
+                    pass
+        dayago = datetime.datetime.utcnow() - datetime.timedelta(days=days)
         dayago = dayago.strftime('%Y-%m-%dT%H:00:00Z')
         namespaces = [1,3,5,7,9,11,13,15,101,109]
         q = api.ListGenerator(listaction='watchlist', wlstart=dayago)
