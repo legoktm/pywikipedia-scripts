@@ -405,7 +405,7 @@ def splitIntoThreads(text, level3=False):
                 curThread['content'] += line + '\n'
     if curThread:
         threads.append(curThread)
-    if not threads:
+    if not threads and not level3:
         threads = splitIntoThreads(text, level3=True)
     return threads
 
