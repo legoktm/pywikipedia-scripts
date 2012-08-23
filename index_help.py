@@ -6,6 +6,7 @@
 (C) Legoktm, 2012 under the MIT License
 helper functions for indexer2.py
 """
+from __future__ import unicode_literals
 import re
 import urllib
 import time
