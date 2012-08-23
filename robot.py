@@ -29,12 +29,15 @@ if __name__ == "__main__":
 """
 from __future__ import unicode_literals
 import sys
+import os
 import re
 import time
 import pywikibot
 
 CONFIGURATION_PAGE = 'User:%s/Configuration'
 CHECK_CONFIG_PAGE_EVERY = 10 #edits
+TS_USERNAME = 'legoktm'
+LOG_PATH = '/home/%s/public_html/%s/'
 
 class Robot:
     
@@ -57,13 +60,33 @@ class Robot:
     
     def startLogging(self, logPage):
         self.loggingEnabled = True
+        self.localLog = False
         self.logPage = logPage
         self.logText = ''
+        self.filled_path = LOG_PATH % (TS_USERNAME, self.username.lower())
+        if os.path.isdir(self.filled_path):
+            self.localLog = True
+            self.logFile = self.filled_path + '%s.txt' % str(self.task)
     
     def pushLog(self, overwrite=False):
+        #first do all local logging, then try on-wiki
+        if self.localLog:
+            if not overwrite and os.path.isfile(self.logFile):
+                f = open(self.logFile, 'r')
+                old = f.read()
+                logText = old + self.logText
+                f.close()
+            else:
+                logText = self.logText
+            f = open(self.logFile, 'w')
+            f.write(logText)
+            f.close()
+            
         if (not overwrite) and self.logPage.exists():
             old = self.logPage.get()
-            self.logText = old + self.logText
+            logText = old + self.logText
+        else:
+            logText = self.logText
         self.logPage.put(self.logText, 'BOT: Updating log')
         self.loggingEnabled = False
         self.logText = ''
@@ -124,7 +147,7 @@ class Robot:
         if not search:
             self.enabled = False
         else:
-            self.enabled = (search.group(3).lower() == 'true')
+            self.enabled = (search.group(3) == 'true')
         return self.enabled
     
     def quit(self, status=0):
