@@ -236,8 +236,11 @@ def followInstructions(info):
     indexText = __buildIndex(data['parsed'], data['template'], info)
     print '>>>Will edit %s' % indexPage.title()
     #pywikibot.showDiff(indexPageOldText, indexText)
-    indexPage.put_async(indexText, 'BOT: Updating index (Trial [[Wikipedia:Bots/Requests for approval/Legobot 15|BRFA]])')
-    return '* Successfully indexed [[%s]] to [[%s]].\n' % (talkPage.title(), indexPage.title())
+    if __verifyUpdate(indexPageOldText, indexText):
+        indexPage.put_async(indexText, 'BOT: Updating index (Trial [[Wikipedia:Bots/Requests for approval/Legobot 15|BRFA]])')
+        return '* Successfully indexed [[%s]] to [[%s]].\n' % (talkPage.title(), indexPage.title())
+    else:
+        return '* [[%s]] did not require a new update.\n' % talkPage.title()
 
 def __okToEdit(text):
     return bool(re.search('<!-- (HBC Archive Indexerbot|Legobot) can blank this -->', text))
@@ -445,4 +448,13 @@ def mwToEpoch(timestamp):
 
 def humanReadable(seconds):
     return str(datetime.timedelta(seconds=seconds))
+
+
+def __verifyUpdate(old, new):
+    """
+    Verifies than an update is needed, and we won't be just updating the timestamp
+    """
+    old2 = re.sub('generated at (.*?) by', 'generated at ~~~~~ by', old)
+    new = new[:len(new)-2] # for some reason when getting the page text, the last linebreak is cutoff?
+    return old2 != new
 
