@@ -255,6 +255,9 @@ def __buildIndex(parsedData, template, info):
     templateData = {}
     key = template.find('<nowiki>')
     lastKey = template.find('</nowiki>')
+    if key == -1:
+        key = template.find('<pre>')
+        lastKey = template.find('</pre>')
     importantStuff = template[key+8:lastKey]
     split = re.split('<!--\s', importantStuff)
     for item in split:
