@@ -238,7 +238,7 @@ def followInstructions(info):
     print '>>>Will edit %s' % indexPage.title()
     #pywikibot.showDiff(indexPageOldText, indexText)
     if __verifyUpdate(indexPageOldText, indexText):
-        indexPage.put_async(indexText, 'BOT: Updating index (Trial [[Wikipedia:Bots/Requests for approval/Legobot 15|BRFA]])')
+        indexPage.put_async(indexText, 'BOT: Updating index')
         return '* Successfully indexed [[%s]] to [[%s]].\n' % (talkPage.title(), indexPage.title())
     else:
         return '* [[%s]] did not require a new update.\n' % talkPage.title()
