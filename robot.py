@@ -9,7 +9,9 @@ Current Requirements:
     Configuration page set up at 'User:USERNAME/Configuration'
     pywikibot-rewrite framework installed
 Currently supports:
-    An on-wiki configuration subpage.
+    An on-wiki configuration subpage. (can be set to check every XX amount of edits)
+    On-wiki logging
+    Local logging
     
 Usage:
 import pywikibot
@@ -36,8 +38,7 @@ import pywikibot
 
 CONFIGURATION_PAGE = 'User:%s/Configuration'
 CHECK_CONFIG_PAGE_EVERY = 10 #edits
-TS_USERNAME = 'legoktm'
-LOG_PATH = '/home/%s/public_html/%s/'
+LOG_PATH = os.path.expanduser('~/public_html/%s/')
 
 class Robot:
     
@@ -63,10 +64,10 @@ class Robot:
         self.localLog = False
         self.logPage = logPage
         self.logText = ''
-        self.filled_path = LOG_PATH % (TS_USERNAME, self.username.lower())
+        self.filled_path = LOG_PATH % (self.username.lower())
         if os.path.isdir(self.filled_path):
             self.localLog = True
-            self.logFile = self.filled_path + '%s.txt' % str(self.task)
+            self.logFile = self.filled_path + '%s.log' % str(self.task)
     
     def pushLog(self, overwrite=False):
         #first do all local logging, then try on-wiki
@@ -112,10 +113,7 @@ class Robot:
                 self.counter += 1
         if not summary:
             summary = self.summary
-        if async:
-            page.put_async(text, summary, minorEdit=minorEdit)
-        else:
-            page.put(text, summary, minorEdit=minorEdit)
+        page.put(text, summary, minorEdit=minorEdit,async=async)
         if self.trial:
             self.trial_action()
         
