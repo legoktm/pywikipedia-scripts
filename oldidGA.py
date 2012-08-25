@@ -42,7 +42,7 @@ class OldidGABot(robot.Robot):
         newtext = oldtext.replace(search.group(0), '{{GA|%s|oldid=%s}}' % (search.group(1), oldid))
         pywikibot.showDiff(oldtext, newtext)
         time.sleep(10)
-        talk_page.put(newtext, 'BOT: Adding |oldid=%s to {{[[Template:GA|GA]]}}' % oldid)
+        talk_page.put_async(newtext, 'BOT: Adding |oldid=%s to {{[[Template:GA|GA]]}}' % oldid)
         
                 
             
