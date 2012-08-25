@@ -48,4 +48,7 @@ class OldidGABot(robot.Robot):
             
 if __name__ == "__main__":
     bot = OldidGABot()
-    bot.run()
+    try:
+        bot.run()
+    finally:
+        bot.pushLog()
