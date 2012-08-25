@@ -8,7 +8,10 @@ import time
 import calendar
 import datetime
 import sqlite3
-import simplejson
+try:
+    import simplejson
+except ImportError:
+    import json as simplejson
 import pywikibot
 from pywikibot.data import api
 import robot
