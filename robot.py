@@ -75,7 +75,7 @@ class Robot:
             if not overwrite and os.path.isfile(self.logFile):
                 f = open(self.logFile, 'r')
                 old = f.read()
-                logText = old + self.logText
+                logText = old + '\n'+ self.logText
                 f.close()
             else:
                 logText = self.logText
@@ -85,7 +85,7 @@ class Robot:
             
         if (not overwrite) and self.logPage.exists():
             old = self.logPage.get()
-            logText = old + self.logText
+            logText = old + '\n' + self.logText
         else:
             logText = self.logText
         self.logPage.put(self.logText, 'BOT: Updating log')
