@@ -88,20 +88,32 @@ class IndexBot(robot.Robot):
     
     def fetchWatchlist(self):
         days = 1
+        page = None
         for arg in self.args:
             if arg.startswith('--days'):
                 try:
                     days = int(arg[7:])
                 except ValueError:
                     pass
+            if arg.startswith('--page'):
+                try:
+                    page = pywikibot.Page(self.site, arg[7:])
+                except:
+                    pass
         dayago = datetime.datetime.utcnow() - datetime.timedelta(days=days)
         dayago = dayago.strftime('%Y-%m-%dT%H:00:00Z')
         namespaces = [1,3,5,7,9,11,13,15,101,109]
-        q = api.ListGenerator(listaction='watchlist', wlstart=dayago)
-        q.set_namespace(namespaces)
+        if page:
+            q = [page]
+        else:
+            q = api.ListGenerator(listaction='watchlist', wlstart=dayago)
+            q.set_namespace(namespaces)
         queue = list()
         for item in q:
-            title = item['title']
+            if page:
+                title = page.title()
+            else:
+                title = item['title']
             if not (title in queue):
                 queue.append(pywikibot.Page(self.site, title))
         cur = self.conn.cursor()
