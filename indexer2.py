@@ -118,21 +118,26 @@ class IndexBot(robot.Robot):
                 queue.append(pywikibot.Page(self.site, title))
         cur = self.conn.cursor()
         for page in queue:
-            cur.execute("SELECT instructions FROM instructions WHERE talkpage=?", (page.title(),))
             try:
-                info = cur.fetchone()['instructions']
-            except TypeError, e:
-                print 'Skipping %s since it isn\'t in the database.' % page.title()
-                page.watch(unwatch=True)
-                continue
-            info = simplejson.loads(info)
-            try:
-                text = index_help.followInstructions(info)
-            except Exception, e:
-                self.output('* Unknown error on %s.' % page.title())
-                continue
-            if text:
-                self.output(text)
+                self.do_page(page, cur)
+            except:
+                pass
+    def do_page(self, page, cur):
+        cur.execute("SELECT instructions FROM instructions WHERE talkpage=?", (page.title(),))
+        try:
+            info = cur.fetchone()['instructions']
+        except TypeError, e:
+            print 'Skipping %s since it isn\'t in the database.' % page.title()
+            page.watch(unwatch=True)
+            return
+        info = simplejson.loads(info)
+        try:
+            text = index_help.followInstructions(info)
+        except Exception, e:
+            self.output('* Unknown error on %s.' % page.title())
+            return
+        if text:
+            self.output(text)
         
         
             
