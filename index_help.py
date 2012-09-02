@@ -7,8 +7,10 @@
 helper functions for indexer2.py
 """
 #from __future__ import unicode_literals
+import sys
 import re
 import urllib
+import difflib
 import time
 import calendar
 import datetime
@@ -462,6 +464,17 @@ def __verifyUpdate(old, new):
     Verifies than an update is needed, and we won't be just updating the timestamp
     """
     old2 = re.sub('generated at (.*?) by', 'generated at ~~~~~ by', old)
-    new = new[:len(new)-2] # for some reason when getting the page text, the last linebreak is cutoff?
-    return old2 != new
+    #pywikibot.showDiff(old2, new)
+    update = False
+    for line in difflib.ndiff(old2.splitlines(), new.splitlines()):
+        if not line.startswith(' '):
+            if line.startswith('+'):
+                if not line[1:].isspace():
+                    update = True
+                    break
+            elif line.startswith('-'):
+                if not line[1:].isspace():
+                    update = True
+                    break
+    return update
 
