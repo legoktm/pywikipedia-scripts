@@ -30,6 +30,7 @@ ALL_CATS = [
 class TransportCatBot(robot.Robot):
     def __init__(self):
        robot.Robot.__init__(self, task=19)
+       self.startLogging(pywikibot.Page(self.site, 'User:Legobot/Transport infrastructure categories'))
     def run(self):
         d = {'year':1800, 'century':'19th'}
         while d['year'] <= 2012:
@@ -43,7 +44,7 @@ class TransportCatBot(robot.Robot):
         cat = pywikibot.Category(self.site, 'Category:Transport infrastructure completed in %(year)s' % d)
         if not cat.exists():
             cat.put(TRANSPORT_TEXT % d, 'BOT:: Creating Transport infrastructure by year category')
-            print 'creating %s' % cat.title()
+            self.output('\n* creating [[:%s]]' % cat.title())
         subcats = list(cat.subcategories())
         shouldhave = []
         for c in ALL_CATS:
@@ -54,7 +55,10 @@ class TransportCatBot(robot.Robot):
             t= i.get()
             n=pywikibot.replaceCategoryLinks(t, [cat],addOnly=True)
             i.put(n, 'BOT: Adding [[:%s]]' % cat.title())
-            print 'adding %s to %s' % (cat.title(), i.title())
+            self.output('\n*adding [[:%s]] to [[:%s]]' % (cat.title(), i.title()))
 if __name__ == "__main__":
     bot = TransportCatBot()
-    bot.run()
+    try:
+        bot.run()
+    finally:
+        bot.pushLog()
