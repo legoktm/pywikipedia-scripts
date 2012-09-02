@@ -19,6 +19,7 @@ import robot
 class TaskRobot(robot.Robot):
     def __init__(self):
        robot.Robot.__init__(self, task=1)
+       self.startLogging(pywikibot.Page(self.site, 'User:Example/Log'))
     def run(self):
         page = pywikibot.Page(self.site, 'Wikipedia:Sandbox')
         text = 'This is a test'
@@ -26,7 +27,10 @@ class TaskRobot(robot.Robot):
         self.edit(page, text, msg)
 if __name__ == "__main__":
     bot = TaskRobot()
-    bot.run()
+    try:
+        bot.run()
+    finally:
+        bot.pushLog()
 
 """
 from __future__ import unicode_literals
@@ -95,7 +99,7 @@ class Robot:
     def output(self, text,debug=False):
         if self.loggingEnabled and not debug:
             self.logText += text
-            if not text.endswith('\n'):
+            if (not text.endswith('\n')) or (not text.startswith('\n')):
                 self.logText += '\n'
         pywikibot.output(text)
     
