@@ -215,8 +215,8 @@ def followInstructions(info):
     edittime = pywikibot.Timestamp.fromISOformat(indexPage.editTime())
     twelvehr = datetime.datetime.utcnow() - datetime.timedelta(hours=12)
     if twelvehr < edittime:
-        print 'Edited %s less than 12 hours ago. skipping.' % indexPage.title()
-        return
+        print 'Edited %s less than 12 hours ago.' % indexPage.title()
+        #return
     #looks good, lets go
     data = {}
     #first process the mask
