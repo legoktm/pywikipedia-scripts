@@ -147,12 +147,11 @@ def main():
     if build:
         bot.begin_databases()
         bot.buildInstructionDB()
-    #bot.updateInstructionDB()
+    bot.updateInstructionDB()
     try:
         bot.fetchWatchlist()
     finally:
-        #bot.pushLog(overwrite=True)
-        pass
+        bot.pushLog(overwrite=True)
        
                 
 if __name__ == "__main__":
