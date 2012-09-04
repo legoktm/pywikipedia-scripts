@@ -51,7 +51,10 @@ class IndexBot(robot.Robot):
             gen = pywikibot.pagegenerators.ReferringPageGenerator(self.template, onlyTemplateInclusion = True, content = True)
         cur = self.conn.cursor()
         for page in gen:
-            print u'Getting/saving data for [[%s]].' % page.title()
+            try:
+                print u'Getting/saving data for [[%s]].' % page.title()
+            except UnicodeEncodeError:
+                pass
             instructions = index_help.parseInstructions(page)
             dumped = simplejson.dumps(instructions)
             revid = page.latestRevision()
