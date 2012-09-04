@@ -73,11 +73,17 @@ class IndexBot(robot.Robot):
         gen = pywikibot.pagegenerators.ReferringPageGenerator(self.template, onlyTemplateInclusion = True, content = True)
         for page in gen:
             if not (page.title() in currentList):
-                print u'%s is a new page.' % page.title()
+                try:
+                    print u'%s is a new page.' % page.title()
+                except UnicodeEncodeError:
+                    pass
                 newList.append(page)
                 continue
             if page.latestRevision() != rows[currentList.index(page.title())]['revid']:
-                print u'%s needs to be updated.' % page.title()
+                try:
+                    print u'%s needs to be updated.' % page.title()
+                except UnicodeEncodeError:
+                    pass
                 updateList.append(page)
         self.output('* New pages: %s' % len(newList))
         self.output('* Updated pages: %s' % len(updateList))
