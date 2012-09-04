@@ -51,7 +51,7 @@ class IndexBot(robot.Robot):
             gen = pywikibot.pagegenerators.ReferringPageGenerator(self.template, onlyTemplateInclusion = True, content = True)
         cur = self.conn.cursor()
         for page in gen:
-            print 'Getting/saving data for [[%s]].' % page.title()
+            print u'Getting/saving data for [[%s]].' % page.title()
             instructions = index_help.parseInstructions(page)
             dumped = simplejson.dumps(instructions)
             revid = page.latestRevision()
@@ -73,11 +73,11 @@ class IndexBot(robot.Robot):
         gen = pywikibot.pagegenerators.ReferringPageGenerator(self.template, onlyTemplateInclusion = True, content = True)
         for page in gen:
             if not (page.title() in currentList):
-                print '%s is a new page.' % page.title()
+                print u'%s is a new page.' % page.title()
                 newList.append(page)
                 continue
             if page.latestRevision() != rows[currentList.index(page.title())]['revid']:
-                print '%s needs to be updated.' % page.title()
+                print u'%s needs to be updated.' % page.title()
                 updateList.append(page)
         self.output('* New pages: %s' % len(newList))
         self.output('* Updated pages: %s' % len(updateList))
@@ -127,7 +127,7 @@ class IndexBot(robot.Robot):
         try:
             info = cur.fetchone()['instructions']
         except TypeError, e:
-            print 'Skipping %s since it isn\'t in the database.' % page.title()
+            print u'Skipping %s since it isn\'t in the database.' % page.title()
             page.watch(unwatch=True)
             return
         info = simplejson.loads(info)

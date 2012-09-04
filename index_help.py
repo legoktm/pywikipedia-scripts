@@ -27,7 +27,7 @@ def parseInstructions(page):
     Parses the index template for all of the parameters
     """
     text = page.get()
-    #print 'Parsing instructions for [[%s]].' % page.title()
+    #print u'Parsing instructions for [[%s]].' % page.title()
     key = text.find('{{User:HBC Archive Indexerbot/OptIn')
     data = text[key:].split('}}')[0][36:] #kinda scared about hardcoding so much
     #remove any comments (apparently users do this)
@@ -184,7 +184,7 @@ def getMasks(info):
                     keep_going = False
         else: #assume the mask is the page
             if ('<' in mask) or ('>' in mask):
-                print 'ERRORERROR: Did not parse %s properly.' % mask
+                print u'ERRORERROR: Did not parse %s properly.' % mask
                 continue
             page = pywikibot.Page(SITE, mask)
             if page.exists():
@@ -215,7 +215,7 @@ def followInstructions(info):
     edittime = pywikibot.Timestamp.fromISOformat(indexPage.editTime())
     twelvehr = datetime.datetime.utcnow() - datetime.timedelta(hours=12)
     if twelvehr < edittime:
-        print 'Edited %s less than 12 hours ago.' % indexPage.title()
+        print u'Edited %s less than 12 hours ago.' % indexPage.title()
         #return
     #looks good, lets go
     data = {}
@@ -237,7 +237,7 @@ def followInstructions(info):
         data['parsed'].extend(parsed)
     #build the index      
     indexText = __buildIndex(data['parsed'], data['template'], info)
-    print '>>>Will edit %s' % indexPage.title()
+    print u'>>>Will edit %s' % indexPage.title()
     #pywikibot.showDiff(indexPageOldText, indexText)
     if __verifyUpdate(indexPageOldText, indexText):
         indexPage.put_async(indexText, 'BOT: Updating index')
@@ -254,7 +254,7 @@ def __buildIndex(parsedData, template, info):
     Reads the template and creates the index for it
     """
     #first lets read the template
-    #print 'Building the index.' 
+    #print u'Building the index.' 
     templateData = {}
     key = template.find('<nowiki>')
     lastKey = template.find('</nowiki>')
@@ -333,7 +333,7 @@ def parseArchive(page):
     while tmp_page.isRedirectPage():
         tmp_page = tmp_page.getRedirectTarget()
     text = tmp_page.get()
-    print 'Parsing %s.' % page.title()
+    print u'Parsing %s.' % page.title()
     threads = splitIntoThreads(text)
     data = list()
     for thread in threads:
