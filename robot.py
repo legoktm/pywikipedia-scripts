@@ -75,17 +75,20 @@ class Robot:
     
     def pushLog(self, overwrite=False):
         #first do all local logging, then try on-wiki
-        if self.localLog:
-            if not overwrite and os.path.isfile(self.logFile):
-                f = open(self.logFile, 'r')
-                old = f.read()
-                logText = old + '\n'+ self.logText
+        try:
+            if self.localLog:
+                if not overwrite and os.path.isfile(self.logFile):
+                    f = open(self.logFile, 'r')
+                    old = f.read()
+                    logText = old + '\n'+ self.logText
+                    f.close()
+                else:
+                    logText = self.logText
+                f = open(self.logFile, 'w')
+                f.write(logText)
                 f.close()
-            else:
-                logText = self.logText
-            f = open(self.logFile, 'w')
-            f.write(logText)
-            f.close()
+        except UnicodeEncodeError:
+            pass
             
         if (not overwrite) and self.logPage.exists():
             old = self.logPage.get()
