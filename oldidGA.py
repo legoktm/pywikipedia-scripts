@@ -37,14 +37,13 @@ class OldidGABot(robot.Robot):
                     break
         #add the oldid in the template
         if not oldid:
-            self.output('* ERROR: Could not find oldid for [[%s]]' & talk_page.title())
+            self.output('* ERROR: Could not find oldid for [[%s]]' % talk_page.title())
             return
         self.output('* Adding |oldid=%s to [[%s]]' % (oldid, talk_page.title()))
         oldtext = talk_page.get()
         search = re.search('\{\{GA\|(.*?)\}\}', oldtext)
         newtext = oldtext.replace(search.group(0), '{{GA|%s|oldid=%s}}' % (search.group(1), oldid))
         pywikibot.showDiff(oldtext, newtext)
-        time.sleep(10)
         talk_page.put_async(newtext, 'BOT: Adding |oldid=%s to {{[[Template:GA|GA]]}}' % oldid)
         
                 
