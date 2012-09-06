@@ -74,6 +74,8 @@ class Robot:
             self.logFile = self.filled_path + '%s.log' % str(self.task)
     
     def pushLog(self, overwrite=False):
+        if not self.logText:
+            return
         #first do all local logging, then try on-wiki
         try:
             if self.localLog:

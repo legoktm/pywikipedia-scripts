@@ -160,6 +160,7 @@ def main():
     try:
         bot.fetchWatchlist()
     finally:
+        bot.logText = 'Run finished at ~~~~~\n' + bot.logText
         bot.pushLog(overwrite=True)
        
                 
