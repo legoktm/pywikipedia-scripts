@@ -287,7 +287,7 @@ def __buildIndex(parsedData, template, info):
     indexText = '<!-- Legobot can blank this -->'
     indexText += templateData['lead']
     reportInfo = 'Report generated based on a request from [[%s]]. It matches the following masks: ' % pywikibot.Page(SITE, info['talkpage']).title()
-    reportInfo += ' ,'.join(info['mask'])
+    reportInfo += ' ,'.join([m.strip() for m in info['mask']])
     reportInfo += '\n<br />\nIt was generated at ~~~~~ by [[User:Legobot|Legobot]].\n'
     indexText += reportInfo
     indexText += templateData['header']
