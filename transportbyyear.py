@@ -42,15 +42,22 @@ class TransportCatBot(robot.Robot):
             d['year'] += 1
     def do_cat(self, d):
         cat = pywikibot.Category(self.site, 'Category:Transport infrastructure completed in %(year)s' % d)
+        subcats = list(cat.subcategories())
+        good_to_go = False
+        for c in ALL_CATS:
+            real = pywikibot.Category(self.site, c % d)
+            if real.exists():
+                good_to_go = True
+                if not (real in subcats):
+                    shouldhave.append(real)
+        if not good_to_go:
+            return
         if not cat.exists():
             cat.put(TRANSPORT_TEXT % d, 'BOT:: Creating Transport infrastructure by year category')
             self.output('\n* creating [[:%s]]' % cat.title())
-        subcats = list(cat.subcategories())
+        
         shouldhave = []
-        for c in ALL_CATS:
-            real = pywikibot.Category(self.site, c % d)
-            if real.exists() and not (real in subcats):
-                shouldhave.append(real)
+
         for i in shouldhave:
             t= i.get()
             n=pywikibot.replaceCategoryLinks(t, [cat],addOnly=True)
