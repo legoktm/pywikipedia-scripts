@@ -97,7 +97,7 @@ class Robot:
             logText = old + '\n' + self.logText
         else:
             logText = self.logText
-        self.logPage.put(self.logText, 'BOT: Updating log')
+        self.logPage.put(logText, 'BOT: Updating log')
         self.loggingEnabled = False
         self.logText = ''
         
@@ -159,5 +159,7 @@ class Robot:
     
     def quit(self, status=0):
         #something fancy to go here later
+        if self.loggingEnabled:
+            self.pushLog()
         sys.exit(status)
     
