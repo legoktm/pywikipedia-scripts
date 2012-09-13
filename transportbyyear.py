@@ -31,7 +31,6 @@ class TransportCatBot(robot.Robot):
     def __init__(self):
        robot.Robot.__init__(self, task=19)
        self.startLogging(pywikibot.Page(self.site, 'User:Legobot/Transport infrastructure categories'))
-       self.start_trial(40)
     def run(self):
         d = {'year':1800, 'century':'19th'}
         while d['year'] <= 2012:
