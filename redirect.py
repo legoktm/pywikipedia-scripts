@@ -375,7 +375,7 @@ class RedirectRobot:
 
     def delete_broken_redirects(self):
         # get reason for deletion text
-        reason = i18n.twtranslate(self.site, 'redirect-remove-broken')
+        reason = 'Robot: Redirect to a deleted or non-existent page'
         for redir_name in self.generator.retrieve_broken_redirects():
             self.delete_1_broken_redirect(redir_name, reason)
             if self.exiting:
@@ -397,28 +397,10 @@ class RedirectRobot:
             try:
                 targetPage.get()
             except pywikibot.NoPage:
-                if self.prompt(
-        u'Redirect target %s does not exist. Do you want to delete %s?'
-                               % (targetPage.title(asLink=True),
-                                  redir_page.title(asLink=True))):
-                    try:
-                        redir_page.delete(reason, prompt = False)
-                    except pywikibot.NoUsername:
-                        if i18n.twhas_key(
-                            targetPage.site.lang,
-                            'redirect-broken-redirect-template') and \
-                            i18n.twhas_key(targetPage.site.lang,
-                                           'redirect-remove-broken'):
-                            pywikibot.output(
-        u"No sysop in user-config.py, put page to speedy deletion.")
-                            content = redir_page.get(get_redirect=True)
-                            ### TODO: Add bot's signature if needed
-                            ###       Not supported via TW yet
-                            content = i18n.twtranslate(
-                                targetPage.site.lang,
-                                'redirect-broken-redirect-template'
-                                ) + "\n" + content
-                            redir_page.put(content, reason)
+                pywikibot.output(u"Putting page to speedy deletion.")
+                content = redir_page.get(get_redirect=True)
+                content = '{{db-redirnonebot|bot=Legobot}}' + "\n" + content
+                redir_page.put(content, reason)
             except pywikibot.IsRedirectPage:
                 pywikibot.output(
         u'Redirect target %s is also a redirect! Won\'t delete anything.'
@@ -695,8 +677,10 @@ def main(*args):
                   or (fullscan and xmlFilename):
         pywikibot.showHelp('redirect')
     else:
-        gen = RedirectGenerator(xmlFilename, namespaces, offset, moved_pages,
-                                fullscan, start, until, number, step)
+        #gen = RedirectGenerator(xmlFilename, namespaces, offset, moved_pages,
+        #                        fullscan, start, until, number, step)
+        dbr = pywikibot.Page(pywikibot.Site(), 'Wikipedia:Database reports/Broken redirects')
+        gen = pagegenerators.LinkedPageGenerator(dbr)
         bot = RedirectRobot(action, gen, always, number)
         bot.run()
 
