@@ -46,6 +46,8 @@ def parseInstructions(page):
             mask = clean(param[5:])
             if mask.startswith('/'):
                 mask = page.title() + mask
+            elif mask.startswith('./'):
+                mask = page.title() + mask[1:]
             info['mask'].append(mask)
         elif param.startswith('indexhere='):
             value = param[10:]
