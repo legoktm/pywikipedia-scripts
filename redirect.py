@@ -376,13 +376,14 @@ class RedirectRobot:
     def delete_broken_redirects(self):
         # get reason for deletion text
         reason = 'Robot: Redirect to a deleted or non-existent page'
-        for redir_name in self.generator.retrieve_broken_redirects():
+        #for redir_name in self.generator.retrieve_broken_redirects():
+        for redir_name in self.generator:
             self.delete_1_broken_redirect(redir_name, reason)
             if self.exiting:
                 break
 
-    def delete_1_broken_redirect(self, redir_name, reason):
-        redir_page = pywikibot.Page(self.site, redir_name)
+    def delete_1_broken_redirect(self, redir_page, reason):
+        #redir_page = pywikibot.Page(self.site, redir_name)
         # Show the title of the page we're working on.
         # Highlight the title in purple.
         pywikibot.output(u"\n\n>>> \03{lightpurple}%s\03{default} <<<"
