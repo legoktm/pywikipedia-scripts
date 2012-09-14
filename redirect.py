@@ -673,15 +673,12 @@ def main(*args):
         else:
             pywikibot.output(u'Unknown argument: %s' % arg)
 
-    if not action or (xmlFilename and moved_pages) \
-                  or (fullscan and xmlFilename):
-        pywikibot.showHelp('redirect')
     else:
         #gen = RedirectGenerator(xmlFilename, namespaces, offset, moved_pages,
         #                        fullscan, start, until, number, step)
         dbr = pywikibot.Page(pywikibot.Site(), 'Wikipedia:Database reports/Broken redirects')
-        gen = pagegenerators.LinkedPageGenerator(dbr)
-        bot = RedirectRobot(action, gen, always, number)
+        gen = pywikibot.pagegenerators.LinkedPageGenerator(dbr)
+        bot = RedirectRobot('broken', gen, True, number)
         bot.run()
 
 if __name__ == '__main__':
