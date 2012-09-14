@@ -25,7 +25,7 @@ def filter_links(json):
 
 
 def build_table(links):
-    text = '{{../Header}}\n'
+    text = '{{/Header}}\n'
     for link in links:
         if '/wiki/' in link:
             f = link.find('/wiki/')
