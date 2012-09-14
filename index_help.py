@@ -82,8 +82,8 @@ def parseInstructions(page):
 def clean(text):
     """various cleaning functions to simplify parsing bad text"""
     
-    #first lets eliminate any whitespace in the front
-    text = __findFront(text)
+    #first lets eliminate any useless whitespace
+    text = text.strip()
     # clean up when people do |indehere=<yes>
     search = re.search('(.*?)=\<(#|yes|no|month|year|.*?)\>', text)
     if search:
@@ -100,12 +100,6 @@ def clean(text):
     if search:
         text = text.replace(search.group(0), search.group(1))
     return text
-
-
-def __findFront(item):
-    while item.startswith(' '):
-        item = item[1:]
-    return item
 
 def __prefixNumber(num, leading):
     """
@@ -340,8 +334,7 @@ def parseArchive(page):
     data = list()
     for thread in threads:
         d = {}
-        d['topic'] = thread['topic']
-        d['topic'] = __findFront(d['topic'])
+        d['topic'] = thread['topic'].strip()
         d['link'] = '[[%s#%s]]' % (page.title(), __cleanLinks(d['topic']))
         content = thread['content']
         d['content'] = content
