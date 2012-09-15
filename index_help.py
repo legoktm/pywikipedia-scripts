@@ -41,6 +41,8 @@ def parseInstructions(page):
             target = clean(param[7:])
             if target.startswith('/'):
                 target = page.title() + target
+            elif target.startswith('./'):
+                target = page.title() + target[1:]
             info['target'] = target
         elif param.startswith('mask='):
             mask = clean(param[5:])
@@ -105,11 +107,10 @@ def __prefixNumber(num, leading):
     """
     Prefixes "num" with %leading zeroes.
     """
-    leading = int(leading)
+    length = int(leading)+1
     num = str(num)
-    while leading != 0:
+    while len(num) != length:
         num = '0' + num
-        leading -= 1
     return num
 
 def __nextMonth(month, year):
