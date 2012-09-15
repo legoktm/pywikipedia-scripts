@@ -19,7 +19,7 @@ def filter_links(json):
     links = []
     for link in data:
         d = link['data']
-        if d['domain'] in ['en.wikipedia.org', 'wikipedia.org']:
+        if d['domain'] in ['en.wikipedia.org', 'wikipedia.org', 'en.m.wikipedia.org']:
             links.append(d['url'])
     return links
 
