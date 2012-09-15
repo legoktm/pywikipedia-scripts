@@ -30,6 +30,8 @@ def build_table(links):
         if '/wiki/' in link:
             f = link.find('/wiki/')
             name = link[f + 6:]
+            if '?' in name:
+                name = name.split('?')[0]
         elif '/index.php' in link:
             f = link.find('title=')
             name = link[f + 6:]
