@@ -358,6 +358,8 @@ class RedirectRobot:
         self.always = always
         self.number = number
         self.exiting = False
+        self.logpage = pywikibot.Page(self.site, 'User:Legobot/Broken Redirects')
+        self.logtext = ''
 
     def prompt(self, question):
         if not self.always:
@@ -381,6 +383,10 @@ class RedirectRobot:
             self.delete_1_broken_redirect(redir_name, reason)
             if self.exiting:
                 break
+        #update log
+        if self.logpage.exists():
+            self.logtext = self.logpage.get() + '\n==~~~~~==\n' + self.logtext
+        self.logpage.put(self.logtext, 'Robot: Updating list of articles tagged for speedy deletion')
 
     def delete_1_broken_redirect(self, redir_page, reason):
         #redir_page = pywikibot.Page(self.site, redir_name)
@@ -402,6 +408,7 @@ class RedirectRobot:
                 content = redir_page.get(get_redirect=True)
                 content = '{{db-redirnonebot|bot=Legobot}}' + "\n" + content
                 redir_page.put(content, reason)
+                self.logtext += '* %s\n' % redir_page.title(asLink=True)
             except pywikibot.IsRedirectPage:
                 pywikibot.output(
         u'Redirect target %s is also a redirect! Won\'t delete anything.'
