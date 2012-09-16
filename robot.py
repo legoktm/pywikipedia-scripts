@@ -73,16 +73,20 @@ class Robot:
             self.localLog = True
             self.logFile = self.filled_path + '%s.log' % str(self.task)
     
-    def pushLog(self, overwrite=False):
+    def pushLog(self, overwrite=False,header=True):
         if not self.logText:
             return
         #first do all local logging, then try on-wiki
+        if header:
+            mid = '\n==~~~~~==\n'
+        else:
+            mid = '\n'
         try:
             if self.localLog:
                 if not overwrite and os.path.isfile(self.logFile):
                     f = open(self.logFile, 'r')
                     old = f.read()
-                    logText = old + '\n'+ self.logText
+                    logText = old + mid+ self.logText
                     f.close()
                 else:
                     logText = self.logText
@@ -94,7 +98,7 @@ class Robot:
             
         if (not overwrite) and self.logPage.exists():
             old = self.logPage.get()
-            logText = old + '\n' + self.logText
+            logText = old + mid + self.logText
         else:
             logText = self.logText
         self.logPage.put(logText, 'BOT: Updating log')
