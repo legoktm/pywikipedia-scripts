@@ -1,4 +1,4 @@
-#!/usr/bin/env
+#!/usr/bin/env python
 from __future__ import unicode_literals
 
 import webbrowser
