@@ -25,10 +25,10 @@ class RedirectBot(robot.Robot):
             self.output('* Skipping [[%s]] since it is a redirect.' % page.title(),debug=True)
             return
         elif page.namespace() != 0:
-            self.output('* Skipping [[:%s]] since it is not in the mainspace.' % page.title())
+            self.output('* Skipping [[:%s]] since it is not in the mainspace.' % page.title(),debug=True)
             return
         if not re.search(CASE, page.title()):
-            self.output('* Error: [[:%s]] did not match the case regex.' % page.title())
+            self.output('* Error: [[:%s]] did not match the case regex.' % page.title(),debug=True)
             return
         redir_title = page.title().replace(' v. ', ' v ')
         redir = pywikibot.Page(self.site, redir_title)
@@ -48,7 +48,6 @@ class RedirectBot(robot.Robot):
         gen = pywikibot.pagegenerators.CategorizedPageGenerator(category, recurse=True)
         for page in gen:
             self.process_page(page)
-        self.pushLog()
     
 
 if __name__ == "__main__":
