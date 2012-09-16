@@ -360,6 +360,7 @@ class RedirectRobot:
         self.exiting = False
         self.logpage = pywikibot.Page(self.site, 'User:Legobot/Broken Redirects')
         self.logtext = ''
+        self.DONT_DELETE_NAMESPACES = [2,3]
 
     def prompt(self, question):
         if not self.always:
@@ -394,6 +395,9 @@ class RedirectRobot:
         # Highlight the title in purple.
         pywikibot.output(u"\n\n>>> \03{lightpurple}%s\03{default} <<<"
                           % redir_page.title())
+        if redir_page.namespace() in self.DONT_DELETE_NAMESPACES:
+            pywikibot.output(u'%s is in a blacklisted namespace.' % redir_page.title())
+            return
         try:
             targetPage = redir_page.getRedirectTarget()
         except pywikibot.IsNotRedirectPage:
