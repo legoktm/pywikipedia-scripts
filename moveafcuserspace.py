@@ -23,6 +23,8 @@ def fetch_pages():
 
 def do_page(article):
     pg = pywikibot.Page(site, article)
+    if not pg.exists():
+        return
     while pg.isRedirectPage():
         pg = pg.getRedirectTarget()
     if pg.namespace() != 2:
@@ -41,12 +43,12 @@ def do_page(article):
         webbrowser.open('http://enwp.org/%s' %pg.title())
         return
     new_title = 'Wikipedia talk:Articles for creation/' + x.strip()
-    print 'Moving to %s' % new_title
     reason = 'Preferred location for [[WP:AFC|AfC]] submissions'
     new_pg = pywikibot.Page(site, new_title)
     if new_pg.exists():
-        print '%s already exists, skipping.' % new_pg.title()
-        return
+        print '%s already exists, will add a (2) to the end.' % new_pg.title()
+        new_title += ' (2)'
+    print 'Moving to %s' % new_title
     pg.move(new_title, reason)
     
 if __name__ == "__main__":
