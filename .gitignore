@@ -4,4 +4,5 @@ i18n/*
 .project
 .pydevproject
 .settings
-
+#pycharm
+.idea
