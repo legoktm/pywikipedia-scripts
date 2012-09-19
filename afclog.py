@@ -4,15 +4,16 @@ import time
 import pywikibot
 import robot
 
+
 class AFCLogger(robot.Robot):
-    
+
     def __init__(self):
         robot.Robot.__init__(self, task=0)
-    
+
     def parseArgs(self):
         for arg in self.args:
             pass
-    
+
     def getStatus(self, page):
         pending = False
         denied = False
@@ -48,7 +49,7 @@ class AFCLogger(robot.Robot):
             top = '{{afc-c|a}}'
             bottom = '{{afc-c|b}}'
             return 'approved', page
-        elif status  in ['re-submit', 'pending']:
+        elif status in ['re-submit', 'pending']:
             top = ''
             bottom = ''
             return 'pending', page
@@ -69,9 +70,10 @@ class AFCLogger(robot.Robot):
             bottom += '\n'
         transclude = '[[%s]]' % page.title()
         return header + top + transclude + bottom
-    
+
     def run(self):
-        page = pywikibot.Page(self.site, 'Category:AfC submissions by date/20 August 2012')
+        page = pywikibot.Page(
+            self.site, 'Category:AfC submissions by date/12 September 2012')
         category = pywikibot.Category(page)
         gen = pywikibot.pagegenerators.CategorizedPageGenerator(category)
         approved = '==Accepted==\n'
@@ -79,15 +81,14 @@ class AFCLogger(robot.Robot):
         denied = '==Denied==\n'
         unknown = '==Unknown==\n'
         for page in gen:
+            print page
             new, page2 = self.wrapTemplate(page)
             text = '* %s\n' % page2.title(asLink=True)
             exec "%s += text" % new
-        full = approved+pending+denied+unknown
-        print full
-        pg = pywikibot.Page(self.site, 'User:Legobot/AFC/2012-08-20')
+        full = approved + pending + denied + unknown
+        pg = pywikibot.Page(self.site, 'User:Legobot/AFC/2012-09-12')
         pg.put(full, 'Bot: Updating AFC log')
 
 if __name__ == "__main__":
     bot = AFCLogger()
     bot.run()
-        

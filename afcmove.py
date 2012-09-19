@@ -14,16 +14,19 @@ task = legobot.Task(13, 'Legobot')
 task.begin()
 site = pywikibot.getSite()
 
+
 def MovedPagesGenerator(ts, old_ts):
-    request = pywikibot.data.api.ListGenerator(site=site, listaction='logevents',letype='move', lestart=ts, leend=old_ts)
+    request = pywikibot.data.api.ListGenerator(site=site, listaction='logevents', letype='move', lestart=ts, leend=old_ts)
     for item in request:
-        yield {'old':item['title'], 'new':item['move']['new_title'], 'user':item['user']}
+        yield {'old': item['title'], 'new': item['move']['new_title'], 'user': item['user']}
+
 
 def create_timestamp(old=False):
     now = datetime.datetime.utcnow()
     if old:
         now -= datetime.timedelta(hours=1)
     return now.strftime('%Y-%m-%dT%H:00:00Z')
+
 
 def main():
     #get page list
@@ -55,7 +58,8 @@ def main():
     if not logtext:
         print u'Nothing was detected, won\'t update the log.'
         return
-    p = pywikibot.Page(site, u'Wikipedia:Articles for creation/Wrongly moved submissions')
+    p = pywikibot.Page(
+        site, u'Wikipedia:Articles for creation/Wrongly moved submissions')
     current_text = p.get()
     newtext = current_text + '\n' + logtext
     p.put(newtext, u'BOT: Updating log')
