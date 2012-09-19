@@ -53,6 +53,7 @@ and arguments can be:
 # (C) Purodha Blissenbach, 2009.
 # (C) xqt, 2009-2012
 # (C) Pywikipedia bot team, 2004-2012
+# (C) Legoktm, 2012
 #
 # Distributed under the terms of the MIT license.
 #
