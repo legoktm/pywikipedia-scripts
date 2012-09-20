@@ -42,7 +42,7 @@ def player(name):
 def main():
     site = pywikibot.Site()
     temp = pywikibot.Page(site, 'Template:Infobox MLB player')
-    gen = pywikibot.pagegenerators.ReferringPageGenerator(temp, onlyTemplateInclusion = True, content = True, total=100000)
+    gen = pywikibot.pagegenerators.ReferringPageGenerator(temp, onlyTemplateInclusion = True, content = True)
     master_text = """{| class="sortable"
 |-
 ! name
