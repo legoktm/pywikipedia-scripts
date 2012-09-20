@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import unicode_literals
 """
 Copyright (C) 2012 Legoktm
 
@@ -53,7 +53,6 @@ if __name__ == "__main__":
         bot.pushLog()
 
 """
-from __future__ import unicode_literals
 import sys
 import os
 import re
