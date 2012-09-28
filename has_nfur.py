@@ -36,6 +36,8 @@ class EnforceTFD(robot.Robot):
         self.gen = pywikibot.pagegenerators.ReferringPageGenerator(self.t_p, onlyTemplateInclusion=True)
     def run(self):
         #fetch copyright licenses
+        self.summary = 'Bot: Removing {{has-NFUR}} per [[Wikipedia:Templates_for_discussion/Log/2012_September_16#Template:Has-NFUR|TFD]]'
+
         all = pywikibot.Page(self.site, 'Wikipedia:File copyright tags/Non-free')
         text = all.get()
         code = mwparserfromhell.parse(text)
@@ -62,6 +64,8 @@ class EnforceTFD(robot.Robot):
     def do_page(self, page):
         text = page.get()
         code = mwparserfromhell.parse(text)
+        tag = False
+        log = '* Removing from [[:%s]]' % page.title()
         for template in code.filter_templates():
             print template
             name = template.name.lower().strip()
@@ -69,12 +73,21 @@ class EnforceTFD(robot.Robot):
                 code.replace(template, '')
             elif name in self.nfurs:
                 template.name = self.nfur
-                template.add('image has rationale', 'yes')
+                tag = True
             elif name in self.nfirs:
                 template.name = self.nfir
-                template.add('image has rational', 'yes')
+                tag = True
+        if tag:
+            for template in code.filter_templates():
+                if template.name.lower().strip() in self.licenses:
+                    template.add('image has rational', 'yes')
+                    log += ', adding <code>|image has rational=yes</code>'
+
+
         pywikibot.showDiff(text, unicode(code))
-        quit()
+        self.output(log)
+        page.put(unicode(code), self.summary)
+
 
 
 
