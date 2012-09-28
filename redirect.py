@@ -386,6 +386,7 @@ class RedirectRobot:
             if self.exiting:
                 break
         #update log
+    def update_log(self):
         if self.logpage.exists():
             self.logtext = self.logpage.get() + '\n==~~~~~==\n' + self.logtext
         self.logpage.put(self.logtext, 'Robot: Updating list of articles tagged for speedy deletion')
@@ -692,10 +693,14 @@ def main(*args):
         dbr = pywikibot.Page(pywikibot.Site(), 'Wikipedia:Database reports/Broken redirects')
         gen = pywikibot.pagegenerators.LinkedPageGenerator(dbr)
         bot = RedirectRobot('broken', gen, True, number)
-        bot.run()
+        try:
+            bot.run()
+        finally:
+            bot.update_log()
 
 if __name__ == '__main__':
     try:
         main()
     finally:
+
         pywikibot.stopme()
