@@ -34,7 +34,7 @@ SITE = pywikibot.Site()
 def fetch_reddit(subreddit='todayilearned'):
     url = 'http://reddit.com/r/%s/.json' % subreddit
     r = requests.get(url)
-    if r.status_code != 200:
+    if r.status_code != requests.codes.ok:
         return {}
     json = simplejson.loads(r.text)
     return json
