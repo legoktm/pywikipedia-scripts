@@ -25,15 +25,15 @@ IN THE SOFTWARE.
 
 import pywikibot
 import mwparserfromhell
-import robot
+#import robot
 
-class DateBot(robot.Robot):
+class DateBot():
     def __init__(self):
-        robot.Robot.__init__(self, task=23)
+        #robot.Robot.__init__(self, task=23)
+        self.site = pywikibot.Site()
     def run(self):
         self.load_templates()
         self.load_redirects()
-        cat = pywikibot.Category(self.site, 'Category:Articles with unsourced statements')
         #gen = pywikibot.pagegenerators.CategorizedPageGenerator(cat, content=True)
         for page in self.gen():
             self.do_page(page)
