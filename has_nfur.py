@@ -59,7 +59,7 @@ class EnforceTFD(robot.Robot):
         text = page.get()
         if '<nowiki>' in text:
             print 'NOWIKI'
-            return
+        #    return
         code = mwparserfromhell.parse(text)
         tag = False
         log = '* Removing from [[:%s]]' % page.title()
@@ -77,10 +77,10 @@ class EnforceTFD(robot.Robot):
                     template.add('image has rationale', 'yes')
                     log += ', adding <code>|image has rationale=yes</code>'
 
-
-        pywikibot.showDiff(text, unicode(code))
+        puttext = unicode(code).lstrip('\n')
+        pywikibot.showDiff(text, puttext)
         self.output(log)
-        page.put(unicode(code), self.summary)
+        page.put(puttext, self.summary)
 
 
 
