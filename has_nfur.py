@@ -29,35 +29,28 @@ import robot
 
 class EnforceTFD(robot.Robot):
     def __init__(self):
+        self.count = 0
         robot.Robot.__init__(self, task=21)
-        self.startLogging(pywikibot.Page(self.site, 'User:Legoktm/Logs/20'))
+        self.startLogging(pywikibot.Page(self.site, 'User:Legobot/Logs/20'))
         self.template = 'has-NFUR'
         self.t_p = pywikibot.Page(self.site, 'Template:'+self.template)
         self.gen = pywikibot.pagegenerators.ReferringPageGenerator(self.t_p, onlyTemplateInclusion=True)
     def run(self):
         #fetch copyright licenses
         self.summary = 'Bot: Removing {{has-NFUR}} per [[Wikipedia:Templates_for_discussion/Log/2012_September_16#Template:Has-NFUR|TFD]]'
-
-        all = pywikibot.Page(self.site, 'Wikipedia:File copyright tags/Non-free')
-        text = all.get()
-        code = mwparserfromhell.parse(text)
         self.licenses = []
-        #fetch redirects for Non-free use rationale and Non-free image rationale
-        self.nfur = 'Non-free use rationale'
-        nfur_p = pywikibot.Page(self.site, 'Template:'+self.nfur)
-        self.nfir = 'Non-free image rationale'
-        nfir_p = pywikibot.Page(self.site, 'Template:'+self.nfir)
-        all = list(nfur_p.getReferences(redirectsOnly=True))
-        self.nfurs = [page.title(withNamespace=False).lower() for page in all]
-        self.nfurs.append(self.nfur.lower())
-        all2 = list(nfir_p.getReferences(redirectsOnly=True))
-        self.nfirs = [page.title(withNamespace=False).lower() for page in all2]
-        self.nfirs.append(self.nfir.lower())
-
-        for template in code.filter_templates():
-            if template.name == 'tl':
-                self.licenses.append(template.get(1).value.lower())
-
+        cat = pywikibot.Category(self.site, 'Category:Wikipedia non-free file copyright tags')
+        templates = cat.articles(namespaces=[10])
+        for temp in templates:
+            self.licenses.append(temp.title(withNamespace=False).lower())
+        cat2 = pywikibot.Category(self.site, 'Category:Non-free use rationale templates')
+        templates = cat.articles(namespaces=[10])
+        self.NFURs = {}
+        for temp in templates:
+            t=temp.title(withNamespace=False)
+            redirs = [page.title(withNamespace=False).lower() for page in temp.getReferences(redirectsOnly=True)]
+            redirs.append(t.lower())
+            self.NFURs[t] = redirs
         for page in self.gen:
             self.do_page(page)
 
@@ -67,21 +60,18 @@ class EnforceTFD(robot.Robot):
         tag = False
         log = '* Removing from [[:%s]]' % page.title()
         for template in code.filter_templates():
-            print template
             name = template.name.lower().strip()
             if name == self.template.lower():
                 code.replace(template, '')
-            elif name in self.nfurs:
-                template.name = self.nfur
-                tag = True
-            elif name in self.nfirs:
-                template.name = self.nfir
-                tag = True
+            for temp in self.NFURs.keys():
+                if name in self.NFURs[temp]:
+                    template.name = temp
+                    tag = True
         if tag:
             for template in code.filter_templates():
                 if template.name.lower().strip() in self.licenses:
-                    template.add('image has rational', 'yes')
-                    log += ', adding <code>|image has rational=yes</code>'
+                    template.add('image has rationale', 'yes')
+                    log += ', adding <code>|image has rationale=yes</code>'
 
 
         pywikibot.showDiff(text, unicode(code))
@@ -97,4 +87,5 @@ if __name__ == "__main__":
     try:
         bot.run()
     finally:
-        bot.pushLog()
+        #bot.pushLog()
+        pass
