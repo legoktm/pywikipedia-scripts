@@ -59,7 +59,7 @@ class EnforceTFD(robot.Robot):
         code = mwparserfromhell.parse(text)
         tag = False
         log = '* Removing from [[:%s]]' % page.title()
-        for template in code.filter_templates():
+        for template in code.filter_templates(recursive=True):
             name = template.name.lower().strip()
             if name == self.template.lower():
                 code.replace(template, '')
@@ -68,7 +68,7 @@ class EnforceTFD(robot.Robot):
                     template.name = temp
                     tag = True
         if tag:
-            for template in code.filter_templates():
+            for template in code.filter_templates(recursive=True):
                 if template.name.lower().strip() in self.licenses:
                     template.add('image has rationale', 'yes')
                     log += ', adding <code>|image has rationale=yes</code>'
