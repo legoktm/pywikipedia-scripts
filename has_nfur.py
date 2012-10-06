@@ -55,7 +55,11 @@ class EnforceTFD(robot.Robot):
             self.do_page(page)
 
     def do_page(self, page):
+        print page.title(asLink=True)
         text = page.get()
+        if '<nowiki>' in text:
+            print 'NOWIKI'
+            return
         code = mwparserfromhell.parse(text)
         tag = False
         log = '* Removing from [[:%s]]' % page.title()
