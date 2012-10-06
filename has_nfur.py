@@ -56,6 +56,8 @@ class EnforceTFD(robot.Robot):
 
     def do_page(self, page):
         print page.title(asLink=True)
+        if page.namespace() != 4:
+            return
         text = page.get()
         if '<nowiki>' in text:
             print 'NOWIKI'
