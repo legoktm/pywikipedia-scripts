@@ -91,7 +91,13 @@ class Robot:
         if os.path.isdir(self.filled_path):
             self.localLog = True
             self.logFile = self.filled_path + '%s.log' % str(self.task)
-    
+
+    def writeLog(self, filename):
+        f = open(filename, 'w')
+        f.write(self.logText)
+        f.close()
+        self.logText = ''
+
     def pushLog(self, overwrite=False,header=True):
         if not self.logText:
             return
