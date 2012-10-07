@@ -76,8 +76,8 @@ class EnforceTFD(robot.Robot):
         if tag:
             for template in code.filter_templates(recursive=True):
                 if template.name.lower().strip() in self.licenses:
-                    template.add('file has rationale', 'yes')
-                    log += ', adding <code>|file has rationale=yes</code>'
+                    template.add('image has rationale', 'yes')
+                    log += ', adding <code>|image has rationale=yes</code>'
 
         puttext = unicode(code).lstrip('\n')
         pywikibot.showDiff(text, puttext)
