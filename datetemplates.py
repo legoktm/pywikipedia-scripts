@@ -22,7 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
-
+import datetime
 import pywikibot
 import mwparserfromhell
 #import robot
@@ -31,6 +31,8 @@ class DateBot():
     def __init__(self):
         #robot.Robot.__init__(self, task=23)
         self.site = pywikibot.Site()
+        today = datetime.datetime.today()
+        self.date_string = today.strftime('%B %Y')
     def run(self):
         self.load_templates()
         self.load_redirects()
@@ -85,7 +87,7 @@ class DateBot():
                 temp.name = self.redirects[temp.name.lower()]
                 if temp.name.lower() in self.date_these:
                     if not temp.has_param('date'):
-                        temp.add('date','{{subst:CURRENTMONTHNAME}} {{subst:CURRENTYEAR}}')
+                        temp.add('date', self.date_string)
                         if temp.name.lower() in summary.keys():
                             summary[temp.name.lower()] += 1
                         else:
