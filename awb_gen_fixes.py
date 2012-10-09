@@ -28,7 +28,7 @@ import pywikibot
 import mwparserfromhell
 #compile a bunch of regular expressions for gen fixes
 APIPEA=re.compile('\[\[(?P<link>.*?)\|(?P=link)\]\]')
-BRS=re.compile('\<(\\|)br(\.|\\)\>', re.IGNORECASE)
+BRS=re.compile('<(\\|)br(\.|\\)>', re.IGNORECASE)
 
 
 class AWBGenFixes():
@@ -97,12 +97,18 @@ class AWBGenFixes():
         return text
 
     def a_pipe_a(self, text):
+        """
+        [[A|A]] --> [[A]]
+        """
         all = APIPEA.finditer(text)
         for match in all:
             text = text.replace(match.group(0), '[[%s]]' % match.group('link'))
         return text
 
     def fix_br(self, text):
+        """
+        <br> <br\> <br.> <\br> --> <br />
+        """
         all = BRS.finditer(text)
         for match in all:
             text = text.replace(match.group(0), '<br />')
