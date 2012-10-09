@@ -41,7 +41,10 @@ def do_page(page, cat):
     newtext = pywikibot.replaceCategoryLinks(text, [cat], site=site, addOnly=True)
     pywikibot.showDiff(text, newtext)
     print 'Saving '+page.title(asLink=True)
-    page.put(newtext, 'Robot: Adding [[:%s]]' % cat.title())
+    try:
+        page.put(newtext, 'Robot: Adding [[:%s]]' % cat.title())
+    except pywikibot.exceptions.LockedPage:
+        pass
 
 for c in cat:
     do_cat(c)
