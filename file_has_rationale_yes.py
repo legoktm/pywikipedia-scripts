@@ -38,6 +38,7 @@ class FileHasRationaleYesBot(robot.Robot):
         self.AWBGenFixes = awb_gen_fixes.AWBGenFixes(self.site)
         self.AWBGenFixes.load()
         self.AWBGenFixes.load_redirects(pywikibot.Page(self.site, 'User:Legoktm/AWB/TR'))
+        self.stop_page = pywikibot.Page(self.site, 'User:Legobot/Stop/22')
     def run(self):
         #fetch copyright licenses
         cat = pywikibot.Category(self.site, 'Category:Wikipedia non-free file copyright tags')
@@ -49,6 +50,11 @@ class FileHasRationaleYesBot(robot.Robot):
         for page in self.gen:
             self.do_page(page)
 
+
+    def check_page(self):
+        text = self.stop_page.get(force=True)
+        if text.lower() != 'run':
+            raise Exception("Stop page disabled")
     def do_page(self, page):
         print page.title(asLink=True)
         if page.namespace() != 6:
@@ -82,6 +88,7 @@ class FileHasRationaleYesBot(robot.Robot):
         puttext = unicode(code).lstrip('\n')
         pywikibot.showDiff(text, puttext)
         self.output(log)
+        self.check_page()
         page.put(puttext, summary)
         self.count +=1 
 
