@@ -25,32 +25,27 @@ IN THE SOFTWARE.
 import pywikibot
 import mwparserfromhell
 import robot
+import awb_gen_fixes
 
 
-class EnforceTFD(robot.Robot):
+class FileHasRationaleYesBot(robot.Robot):
     def __init__(self):
-        self.count = 0
-        robot.Robot.__init__(self, task=21)
-        self.startLogging(pywikibot.Page(self.site, 'User:Legobot/Logs/20'))
-        self.template = 'has-NFUR'
-        self.t_p = pywikibot.Page(self.site, 'Template:'+self.template)
-        self.gen = pywikibot.pagegenerators.ReferringPageGenerator(self.t_p, onlyTemplateInclusion=True)
+        self.count = 1
+        robot.Robot.__init__(self, task=22)
+        self.startLogging(pywikibot.Page(self.site, 'User:Legobot/Logs/22'))
+        self.cat = pywikibot.Category(self.site, "Category:Non-free images for NFUR review")
+        self.gen = self.cat.articles(namespaces=[6], content=True)
+        self.AWBGenFixes = awb_gen_fixes.AWBGenFixes(self.site)
+        self.AWBGenFixes.load()
+        self.AWBGenFixes.load_redirects(pywikibot.Page(self.site, 'User:Legoktm/AWB/TR'))
     def run(self):
         #fetch copyright licenses
-        self.summary = 'Bot: Removing {{has-NFUR}} per [[Wikipedia:Templates_for_discussion/Log/2012_September_16#Template:Has-NFUR|TFD]]'
-        self.licenses = []
         cat = pywikibot.Category(self.site, 'Category:Wikipedia non-free file copyright tags')
         templates = cat.articles(namespaces=[10])
-        for temp in templates:
-            self.licenses.append(temp.title(withNamespace=False).lower())
+        self.licenses = [temp.title(withNamespace=False).lower() for temp in templates]
         cat2 = pywikibot.Category(self.site, 'Category:Non-free use rationale templates')
-        templates = cat.articles(namespaces=[10])
-        self.NFURs = {}
-        for temp in templates:
-            t=temp.title(withNamespace=False)
-            redirs = [page.title(withNamespace=False).lower() for page in temp.getReferences(redirectsOnly=True)]
-            redirs.append(t.lower())
-            self.NFURs[t] = redirs
+        nfur_temps = cat2.articles(namespaces=[10])
+        self.NFURs = [temp.title(withNamespace=False).lower() for temp in nfur_temps]
         for page in self.gen:
             self.do_page(page)
 
@@ -62,36 +57,42 @@ class EnforceTFD(robot.Robot):
         if '<nowiki>' in text:
             print 'NOWIKI'
         #    return
+        text, gen_fix_summary = self.AWBGenFixes.do_page(text)
         code = mwparserfromhell.parse(text)
         tag = False
-        log = '* Removing from [[:%s]]' % page.title()
+        log = '* '
+        summary = 'Bot: Updating license tag(s) with image has rationale=yes'
         for template in code.filter_templates(recursive=True):
             name = template.name.lower().strip()
-            if name == self.template.lower():
-                code.replace(template, '')
-            for temp in self.NFURs.keys():
-                if name in self.NFURs[temp]:
-                    template.name = temp
-                    tag = True
+            if name in self.NFURs:
+                print name
+                tag = True
         if tag:
             for template in code.filter_templates(recursive=True):
                 if template.name.lower().strip() in self.licenses:
                     template.add('image has rationale', 'yes')
-                    log += ', adding <code>|image has rationale=yes</code>'
-
+                    log += '[[:%s]]: Adding <code>|image has rationale=yes</code>' % page.title()
+        else:
+            print 'Skipping '+page.title(asLink=True)
+            return
+        if gen_fix_summary:
+            summary += ', also dating ' + gen_fix_summary
+        if self.count > 50:
+            quit()
         puttext = unicode(code).lstrip('\n')
         pywikibot.showDiff(text, puttext)
         self.output(log)
-        page.put(puttext, self.summary)
+        page.put(puttext, summary)
+        self.count +=1 
 
 
 
 
 
 if __name__ == "__main__":
-    bot = EnforceTFD()
+    bot = FileHasRationaleYesBot()
     try:
         bot.run()
     finally:
-        #bot.pushLog()
+        bot.pushLog()
         pass
