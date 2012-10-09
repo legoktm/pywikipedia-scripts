@@ -22,8 +22,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
+import re
+
 import pywikibot
 import mwparserfromhell
+#compile a bunch of regular expressions for gen fixes
+APIPEA=re.compile('\[\[(?P<link>.*?)\|(?P=link)\]\]')
+BRS=re.compile('\<(\\|)br(\.|\\)\>', re.IGNORECASE)
+
 
 class AWBGenFixes():
     def __init__(self, site):
@@ -85,3 +91,19 @@ class AWBGenFixes():
         return unicode(code), msg
 
 
+    def all_fixes(self,text):
+        text = self.a_pipe_a(text)
+        text = self.fix_br(text)
+        return text
+
+    def a_pipe_a(self, text):
+        all = APIPEA.finditer(text)
+        for match in all:
+            text = text.replace(match.group(0), '[[%s]]' % match.group('link'))
+        return text
+
+    def fix_br(self, text):
+        all = BRS.finditer(text)
+        for match in all:
+            text = text.replace(match.group(0), '<br />')
+        return text
