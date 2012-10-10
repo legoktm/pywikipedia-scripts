@@ -23,13 +23,15 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
 import re
-
+import datetime
 import pywikibot
 import mwparserfromhell
 #compile a bunch of regular expressions for gen fixes
 APIPEA=re.compile('\[\[(?P<link>.*?)\|(?P=link)\]\]')
 BRS=re.compile('<(\\|)br(\.|\\)>', re.IGNORECASE)
-
+DOUBLEPIPE=re.compile('\[\[(.*?)\|\|(.*?)\]\]')
+BROKENLINKS1=re.compile(re.escape('http::/'), re.IGNORECASE)
+BROKENLINKS2=re.compile(re.escape('http://http://'), re.IGNORECASE)
 
 class AWBGenFixes():
     def __init__(self, site):
@@ -82,7 +84,7 @@ class AWBGenFixes():
                 temp.name = self.redirects[temp.name.lower()]
                 if temp.name.lower() in self.date_these:
                     if not temp.has_param('date'):
-                        temp.add('date','{{subst:CURRENTMONTHNAME}} {{subst:CURRENTYEAR}}')
+                        temp.add('date', datetime.datetime.today().strftime('%B %Y'))
                         if temp.name.lower() in summary.keys():
                             summary[temp.name.lower()] += 1
                         else:
@@ -93,7 +95,9 @@ class AWBGenFixes():
 
     def all_fixes(self,text):
         text = self.a_pipe_a(text)
+        text = self.double_pipe(text)
         text = self.fix_br(text)
+        text = self.fix_http(text)
         return text
 
     def a_pipe_a(self, text):
@@ -112,4 +116,26 @@ class AWBGenFixes():
         all = BRS.finditer(text)
         for match in all:
             text = text.replace(match.group(0), '<br />')
+        return text
+
+    def double_pipe(self, text):
+        """
+        [[foo||bar]] --> [[foo|bar]]
+        """
+        all = DOUBLEPIPE.finditer(text)
+        for match in all:
+            text = text.replace(match.group(0), '[[%s|%s]]' %(match.group(1), match.group(2)))
+        return text
+
+    def fix_http(self, text):
+        """
+        http://http://example.com --> http://example.com
+        http:://example.com --> http://example.com
+        """
+        all1 = BROKENLINKS1.finditer(text)
+        for match in all1:
+            text = text.replace(match.group(0), 'http://')
+        all2 = BROKENLINKS2.finditer(text)
+        for match in all2:
+            text = text.replace(match.group(0), 'http://')
         return text
