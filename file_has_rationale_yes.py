@@ -101,5 +101,5 @@ if __name__ == "__main__":
     try:
         bot.run()
     finally:
-        bot.pushLog()
+        #bot.pushLog()
         pass
