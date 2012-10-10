@@ -28,7 +28,7 @@ import pywikibot
 import mwparserfromhell
 #compile a bunch of regular expressions for gen fixes
 APIPEA=re.compile('\[\[(?P<link>.*?)\|(?P=link)\]\]')
-BRS=re.compile('<(\\|)br(\.|\\)>', re.IGNORECASE)
+#BRS=re.compile('<(\\|)br(\.|\\)>', re.IGNORECASE)
 DOUBLEPIPE=re.compile('\[\[(.*?)\|\|(.*?)\]\]')
 BROKENLINKS1=re.compile(re.escape('http::/'), re.IGNORECASE)
 BROKENLINKS2=re.compile(re.escape('http://http://'), re.IGNORECASE)
@@ -76,7 +76,9 @@ class AWBGenFixes():
                     self.redirects[name.lower()] = destination
                     self.redirects[destination.lower()] = destination
 
-    def do_page(self, text):
+    def do_page(self, text, fixes=True):
+        if fixes:
+            text = self.all_fixes(text)
         code = mwparserfromhell.parse(text)
         summary= {}
         for temp in code.filter_templates(recursive=True):
@@ -96,7 +98,7 @@ class AWBGenFixes():
     def all_fixes(self,text):
         text = self.a_pipe_a(text)
         text = self.double_pipe(text)
-        text = self.fix_br(text)
+        #text = self.fix_br(text)
         text = self.fix_http(text)
         return text
 
