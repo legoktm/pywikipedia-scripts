@@ -30,7 +30,6 @@ import awb_gen_fixes
 
 class FileHasRationaleYesBot(robot.Robot):
     def __init__(self):
-        self.count = 1
         robot.Robot.__init__(self, task=22)
         self.startLogging(pywikibot.Page(self.site, 'User:Legobot/Logs/22'))
         self.cat = pywikibot.Category(self.site, "Category:Non-free images for NFUR review")
@@ -83,14 +82,11 @@ class FileHasRationaleYesBot(robot.Robot):
             return
         if gen_fix_summary:
             summary += ', also dating ' + gen_fix_summary
-        if self.count > 50:
-            quit()
         puttext = unicode(code).lstrip('\n')
         pywikibot.showDiff(text, puttext)
         self.output(log)
         self.check_page()
         page.put(puttext, summary)
-        self.count +=1 
 
 
 
