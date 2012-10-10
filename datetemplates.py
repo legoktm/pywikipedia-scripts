@@ -31,8 +31,7 @@ class DateBot():
     def __init__(self):
         #robot.Robot.__init__(self, task=23)
         self.site = pywikibot.Site()
-        today = datetime.datetime.today()
-        self.date_string = today.strftime('%B %Y')
+        self.date_string = datetime.datetime.today().strftime('%B %Y')
     def run(self):
         self.load_templates()
         self.load_redirects()
