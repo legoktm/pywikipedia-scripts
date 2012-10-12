@@ -82,8 +82,11 @@ class AWBGenFixes():
         code = mwparserfromhell.parse(text)
         summary= {}
         for temp in code.filter_templates(recursive=True):
-            if temp.name.lower() in self.redirects.keys():
-                temp.name = self.redirects[temp.name.lower()]
+            name = temp.name.lower().strip()
+            if name in self.redirects.keys():
+                new_name = self.redirects[name]
+                if new_name.lower() != name: #prevents from capitalizing the first letter needlessly
+                    temp.name = new_name
                 if temp.name.lower() in self.date_these:
                     if not temp.has_param('date'):
                         temp.add('date', datetime.datetime.today().strftime('%B %Y'))
