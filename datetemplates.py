@@ -22,53 +22,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
-import datetime
 import pywikibot
-import mwparserfromhell
+import awb_gen_fixes
 #import robot
 
 class DateBot():
     def __init__(self):
         #robot.Robot.__init__(self, task=23)
         self.site = pywikibot.Site()
-        self.date_string = datetime.datetime.today().strftime('%B %Y')
+        self.AWB = awb_gen_fixes.AWBGenFixes(self.site)
     def run(self):
-        self.load_templates()
-        self.load_redirects()
+        self.AWB.load()
         #gen = pywikibot.pagegenerators.CategorizedPageGenerator(cat, content=True)
         for page in self.gen():
             self.do_page(page)
-
-
-    def load_templates(self):
-        page = pywikibot.Page(self.site, 'Wikipedia:AutoWikiBrowser/Dated templates')
-        text = page.get()
-        code = mwparserfromhell.parse(text)
-        all = []
-        for temp in code.filter_templates():
-            if temp.name.lower() == 'tl':
-                all.append(temp.get(1).value.lower())
-        self.date_these = all
-
-    def load_redirects(self):
-        page = pywikibot.Page(self.site, 'Wikipedia:AutoWikiBrowser/Template redirects')
-        text = page.get()
-        redirs = {}
-        for line in text.splitlines():
-            if not '→' in line:
-                continue
-            split = line.split('→')
-            if len(split) != 2:
-                continue
-            code1=mwparserfromhell.parse(split[0])
-            code2=mwparserfromhell.parse(split[1])
-            destination = code2.filter_templates()[0].get(1).value #ehhhh
-            for temp in code1.filter_templates():
-                if temp.name.lower() == 'tl':
-                    name = temp.get(1).value
-                    redirs[name.lower()] = destination
-                    redirs[destination.lower()] = destination
-        self.redirects = redirs
 
 
     def gen(self):
@@ -79,23 +46,11 @@ class DateBot():
     def do_page(self, page):
         print page
         text = page.get()
-        code = mwparserfromhell.parse(text)
-        summary= {}
-        for temp in code.filter_templates(recursive=True):
-            if temp.name.lower() in self.redirects.keys():
-                temp.name = self.redirects[temp.name.lower()]
-                if temp.name.lower() in self.date_these:
-                    if not temp.has_param('date'):
-                        temp.add('date', self.date_string)
-                        if temp.name.lower() in summary.keys():
-                            summary[temp.name.lower()] += 1
-                        else:
-                            summary[temp.name.lower()] = 1
-        if not summary:
+        newtext, msg = self.AWB.do_page(text)
+        if not msg:
             return
-        msg = ', '.join('{{%s}} (%s)' % (item, summary[item]) for item in summary.keys())
         try:
-            page.put(unicode(code), 'BOT: Dating templates: '+msg)
+            page.put(unicode(newtext), 'BOT: Dating templates: '+msg)
         except pywikibot.exceptions.PageNotSaved:
             pass
         except pywikibot.exceptions.LockedPage:
