@@ -129,7 +129,7 @@ def __prefixNumber(num, leading):
     """
     length = int(leading)+1
     num = str(num)
-    while len(num) != length:
+    while len(num) < length:
         num = '0' + num
     return num
 
