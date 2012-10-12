@@ -31,12 +31,18 @@ class DateBot():
         #robot.Robot.__init__(self, task=23)
         self.site = pywikibot.Site()
         self.AWB = awb_gen_fixes.AWBGenFixes(self.site)
+        self.stop_page = pywikibot.Page(self.site, 'User:Legobot/Stop/II 2')
+        self.summary_end = '. Errors? [[User:Legobot/Stop/II 2|stop me]]'
     def run(self):
         self.AWB.load()
         #gen = pywikibot.pagegenerators.CategorizedPageGenerator(cat, content=True)
         for page in self.gen():
             self.do_page(page)
 
+    def check_run_page(self):
+        text = self.stop_page.get(force=True)
+        if text.lower() != 'run':
+            raise Exception("Stop page disabled")
 
     def gen(self):
         cat = pywikibot.Category(self.site, 'Category:Wikipedia maintenance categories sorted by month')
@@ -50,7 +56,8 @@ class DateBot():
         if not msg:
             return
         try:
-            page.put(unicode(newtext), 'BOT: Dating templates: '+msg)
+            self.check_run_page()
+            page.put(unicode(newtext), 'BOT: Dating templates: '+msg+self.summary_end)
         except pywikibot.exceptions.PageNotSaved:
             pass
         except pywikibot.exceptions.LockedPage:
