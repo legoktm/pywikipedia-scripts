@@ -36,10 +36,6 @@ except ImportError:
 site = pywikibot.getSite()
 
 def run(gen):
-    #fetch copyright licenses
-    #cat = pywikibot.Category(site, 'Category:Non-free use rationale templates')
-    #gen = cat.articles(namespaces=[10])
-    NFURs = {}
     for temp in gen:
         t=temp.title(withNamespace=False)
         item = [page.title(withNamespace=False) for page in temp.getReferences(redirectsOnly=True, namespaces=[10])]
