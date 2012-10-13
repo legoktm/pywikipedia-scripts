@@ -413,7 +413,10 @@ class RedirectRobot:
                 pywikibot.output(u"Putting page to speedy deletion.")
                 content = redir_page.get(get_redirect=True)
                 content = '{{db-redirnonebot|bot=Legobot}}' + "\n" + content
-                redir_page.put(content, reason)
+                try:
+                    redir_page.put(content, reason)
+                except pywikibot.exceptions.LockedPage:
+                    pass
                 self.logtext += '* %s\n' % redir_page.title(asLink=True)
             except pywikibot.IsRedirectPage:
                 pywikibot.output(
