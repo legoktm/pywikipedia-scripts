@@ -39,10 +39,12 @@ class AWBGenFixes():
         self.site = site
         self.date_these = []
         self.redirects = {}
+        self.skip_list = []
 
-    def load(self, tr=None, dt=None):
+    def load(self, tr=None, dt=None, skip=None):
         self.load_templates(dt=dt)
         self.load_redirects(tr=tr)
+        self.load_skip_templates(templates=skip)
 
     def load_templates(self, dt=None):
         if dt:
@@ -54,6 +56,16 @@ class AWBGenFixes():
         for temp in code.filter_templates():
             if temp.name.lower() == 'tl':
                 self.date_these.append(temp.get(1).value.lower())
+
+    def load_skip_templates(self, templates=None):
+        #note, pywikipediabot automatically supports {{bots}}
+        if not templates:
+            templates = ['In use']
+        for temp in templates:
+            t = pywikibot.Page(self.site, 'Template:'+temp)
+            for pg in t.getReferences(redirectsOnly=True):
+                self.skip_list.append(pg.title(withNamespace=False).lower())
+
 
     def load_redirects(self, tr=None):
         if tr:
@@ -75,6 +87,17 @@ class AWBGenFixes():
                     name = temp.get(1).value
                     self.redirects[name.lower()] = destination
                     self.redirects[destination.lower()] = destination
+
+    def in_use(self, text):
+        """
+        Returns a boolean value
+        if the text contains a skip template
+        """
+        code = mwparserfromhell.parse(text)
+        for temp in code.filter_templates(recursive=True):
+            if temp.name.lower().strip() in self.skip_list:
+                return True
+        return False
 
     def do_page(self, text, fixes=True):
         if fixes:

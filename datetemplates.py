@@ -52,6 +52,8 @@ class DateBot():
     def do_page(self, page):
         print page
         text = page.get()
+        if self.AWB.in_use(text):
+            return
         newtext, msg = self.AWB.do_page(text)
         if not msg:
             return
