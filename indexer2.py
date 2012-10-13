@@ -44,7 +44,9 @@ import index_help
 
 """
 
-
+DB = '/data/projects/legoktm/pywp/index2.db'
+if not os.path.isfile(DB):
+    DB = 'index2.db'
 
 #constants
 MONTH_NAMES = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')
@@ -57,7 +59,7 @@ class IndexBot(robot.Robot):
     def __init__(self):
         robot.Robot.__init__(self, task=15)
         self.template = pywikibot.Page(self.site, 'User:HBC Archive Indexerbot/OptIn')
-        self.db = 'index2.db'
+        self.db = DB
         self.startLogging(pywikibot.Page(self.site, 'User:Legobot/Archive Indexer Log'))
         self.conn = sqlite3.connect(self.db)
         self.conn.row_factory = sqlite3.Row
@@ -173,7 +175,7 @@ class IndexBot(robot.Robot):
         
             
 def main():
-    build = not os.path.isfile('index2.db')
+    build = not os.path.isfile(DB)
     bot = IndexBot()
     if build:
         bot.begin_databases()
