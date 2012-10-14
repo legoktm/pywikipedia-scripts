@@ -93,6 +93,7 @@ class FileHasRationaleYesBot(robot.Robot):
 
 
 if __name__ == "__main__":
+    pywikibot.handleArgs()
     bot = FileHasRationaleYesBot()
     try:
         bot.run()
