@@ -123,7 +123,7 @@ class AWBGenFixes():
 
     def all_fixes(self,text):
         text = self.a_pipe_a(text)
-        text = self.double_pipe(text)
+        #text = self.double_pipe(text)
         #text = self.fix_br(text)
         text = self.fix_http(text)
         return text
