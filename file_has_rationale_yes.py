@@ -86,7 +86,10 @@ class FileHasRationaleYesBot(robot.Robot):
         pywikibot.showDiff(text, puttext)
         self.output(log)
         self.check_page()
-        page.put(puttext, summary)
+        try:
+            page.put(puttext, summary)
+        except pywikibot.exceptions.PageNotSaved:
+            pass
 
 
 
