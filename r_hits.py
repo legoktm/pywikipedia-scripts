@@ -98,6 +98,7 @@ def do_page(title, date, rlink):
     talk = pg.toggleTalkPage()
     print talk
     text = talk.get()
+    print rlink
     summary = 'BOT: Updating {{high traffic}} with reddit post on %s' % date
     code = mwparserfromhell.parse(text)
     for template in code.filter_templates():
