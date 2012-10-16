@@ -87,7 +87,7 @@ class FileHasRationaleYesBot(robot.Robot):
         self.output(log)
         self.check_page()
         try:
-            page.put(puttext, summary)
+            page.put(puttext, summary, nocreate=True)
         except pywikibot.exceptions.PageNotSaved:
             pass
         except pywikibot.exceptions.LockedPage:
