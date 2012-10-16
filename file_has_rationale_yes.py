@@ -90,6 +90,8 @@ class FileHasRationaleYesBot(robot.Robot):
             page.put(puttext, summary)
         except pywikibot.exceptions.PageNotSaved:
             pass
+        except pywikibot.exceptions.LockedPage:
+            pass
 
 
 
