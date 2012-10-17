@@ -417,7 +417,7 @@ class RedirectRobot:
                     redir_page.put(content, reason)
                 except pywikibot.exceptions.LockedPage:
                     pass
-                self.logtext += '* %s\n' % redir_page.title(asLink=True)
+                self.logtext += '* [[:%s]]\n' % redir_page.title()
             except pywikibot.IsRedirectPage:
                 pywikibot.output(
         u'Redirect target %s is also a redirect! Won\'t delete anything.'
