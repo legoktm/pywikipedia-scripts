@@ -30,11 +30,14 @@ import simplejson
 import pywikibot
 import mwparserfromhell
 
+
+UA = {'User-agent':'http://enwp.org/User:Legoktm'}
+
 SITE = pywikibot.Site()
 def fetch_reddit(subreddit='todayilearned'):
     url = 'http://reddit.com/r/%s/.json' % subreddit
-    r = requests.get(url)
-    if r.status_code != requests.codes.ok:
+    r = requests.get(url, headers=UA)
+    if not r.ok:
         return {}
     json = simplejson.loads(r.text)
     return json
