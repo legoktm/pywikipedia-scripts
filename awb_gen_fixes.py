@@ -110,13 +110,13 @@ class AWBGenFixes():
                 new_name = self.redirects[name]
                 if new_name.lower() != name: #prevents from capitalizing the first letter needlessly
                     temp.name = new_name
-                if temp.name.lower() in self.date_these:
-                    if not temp.has_param('date'):
-                        temp.add('date', datetime.datetime.today().strftime('%B %Y'))
-                        if temp.name.lower() in summary.keys():
-                            summary[temp.name.lower()] += 1
-                        else:
-                            summary[temp.name.lower()] = 1
+            if temp.name.lower() in self.date_these:
+                if not temp.has_param('date'):
+                    temp.add('date', datetime.datetime.today().strftime('%B %Y'))
+                    if temp.name.lower() in summary.keys():
+                        summary[temp.name.lower()] += 1
+                    else:
+                        summary[temp.name.lower()] = 1
         msg = ', '.join('{{%s}} (%s)' % (item, summary[item]) for item in summary.keys())
         return unicode(code), msg
 
