@@ -22,6 +22,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
+import datetime
+
 import pywikibot
 import awb_gen_fixes
 #import robot
@@ -49,10 +51,22 @@ class DateBot():
         for subcat in cat.subcategories():
             for page in subcat.articles(content=True, namespaces=[0]):
                 yield page
+
+    def is_dormant(self, page):
+        """
+        Checks if a page hasn't been
+        edited for the past 30 minutes
+        """
+        last = page.editTime()
+        dt = pywikibot.Timestamp.fromISOformat(last)
+        return datetime.datetime.now() - dt > datetime.timedelta(minutes=30)
+
     def do_page(self, page):
         print page
         text = page.get()
         if self.AWB.in_use(text):
+            return
+        elif self.is_dormant(page):
             return
         newtext, msg = self.AWB.do_page(text)
         if not msg:
