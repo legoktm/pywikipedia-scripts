@@ -55,18 +55,18 @@ class DateBot():
     def is_dormant(self, page):
         """
         Checks if a page hasn't been
-        edited for the past 30 minutes
+        edited for the past 20 minutes
         """
         last = page.editTime()
         dt = pywikibot.Timestamp.fromISOformat(last)
-        return datetime.datetime.now() - dt > datetime.timedelta(minutes=30)
+        return datetime.datetime.now() - dt > datetime.timedelta(minutes=20)
 
     def do_page(self, page):
         print page
         text = page.get()
         if self.AWB.in_use(text):
             return
-        elif self.is_dormant(page):
+        elif not self.is_dormant(page):
             return
         newtext, msg = self.AWB.do_page(text)
         if not msg:
