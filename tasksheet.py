@@ -34,9 +34,9 @@ BRFA = 'Wikipedia:Bots/Requests for approval/%s %s'
 
 class UpdateTaskSheetRobot(robot.Robot):
 
-    def __init__(self):
+    def __init__(self, bot='Legobot'):
         robot.Robot.__init__(self, 0)
-        self.bot = 'Legobot'
+        self.bot = bot
         self.taskPage = pywikibot.Page(self.site, 'User:%s/Tasks' % self.bot)
         
     def parseCurrentTasks(self):
@@ -88,12 +88,12 @@ class UpdateTaskSheetRobot(robot.Robot):
         return pageContent
     
     def functionSummary(self, text):
-        found = re.findall("'''Function Summary:''' (.*?)\n", text)
+        found = re.findall("'''Function Summary:''' (.*?)\n", text, re.IGNORECASE)
         try:
             real = found[0]
         except IndexError:
             try:
-                found = re.findall("'''Function (o|O)verview:''' (.*?)\n", text)
+                found = re.findall("'''Function Overview:''' (.*?)\n", text, re.IGNORECASE)
                 real = found[0][1]
             except IndexError:
                 real = ''
@@ -116,6 +116,7 @@ class UpdateTaskSheetRobot(robot.Robot):
             if not brfa_page.exists():
                 break
             brfa_text = brfa_page.get()
+            print 'Fetching %s' % brfa_page.title(asLink=True)
             brfa_result = self.brfaStatus(brfa_text)
             details = self.functionSummary(brfa_text)
             if brfa_result in ('op_needed', 'bag_needed','unknown'):
@@ -141,7 +142,7 @@ class UpdateTaskSheetRobot(robot.Robot):
         text = text.lower()
         if '{{botrevoked}}' in text:
             stat = 'revoked'
-        elif '{{botapproved}}' in text:
+        elif '{{botapproved' in text:
             stat = 'approved'
         elif '{{botspeedy}}' in text:
             stat = 'speedy'
@@ -173,5 +174,6 @@ class UpdateTaskSheetRobot(robot.Robot):
         self.taskPage.put(content, 'BOT: Updating list of tasks in userspace')
 
 if __name__ == "__main__":
-    bot = UpdateTaskSheetRobot()
-    bot.run()
+    for username in ['Legobot', 'Legobot II', 'Legobot III', 'Hockeybot']:
+        bot = UpdateTaskSheetRobot(bot=username)
+        bot.run()
