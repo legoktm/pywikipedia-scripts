@@ -126,6 +126,7 @@ class AWBGenFixes():
         #text = self.double_pipe(text)
         #text = self.fix_br(text)
         text = self.fix_http(text)
+        text = self.fix_template_prefix(text)
         return text
 
     def a_pipe_a(self, text):
@@ -167,3 +168,14 @@ class AWBGenFixes():
         for match in all2:
             text = text.replace(match.group(0), 'http://')
         return text
+
+    def fix_template_prefix(self, text):
+        """
+        {{template:foo}} --> {{foo}}
+        {{Template:bar}} --> {{bar}}
+        """
+        code = mwparserfromhell.parse(text)
+        for template in code.filter_templates(recursive=True):
+            if template.name.strip().startswith(('Template:', 'template:')):
+                template.name = template.name.strip()[9:]
+        return unicode(code)
