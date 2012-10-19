@@ -200,6 +200,19 @@ def getMasks(info):
                     month, year = __nextMonth(month, year)
                 else:
                     keep_going = False
+        elif '<year>' in mask: #special case for when only a year is provided
+            regex = mask.replace('<year>', '(\d\d\d\d)')
+            match = re.search(regex, info['first_archive'])
+            year = int(match.group(1))
+            keep_going = True
+            while keep_going:
+                title = mask.replace('<year>', str(year))
+                page = pywikibot.Page(SITE, title)
+                if page.exists():
+                    data.append(page)
+                    year += 1
+                else:
+                    keep_going = False
         else: #assume the mask is the page
             if ('<' in mask) or ('>' in mask):
                 print u'ERRORERROR: Did not parse %s properly.' % mask
