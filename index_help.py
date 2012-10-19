@@ -35,6 +35,7 @@ import time
 import calendar
 import datetime
 import pywikibot
+import indexer #for error classes
 SITE = pywikibot.getSite()
 LOG_TEXT = ''
 MONTH_NAMES = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')
@@ -184,7 +185,7 @@ def getMasks(info):
                         
         elif '<month>' in mask:
             if not info.has_key('first_archive'):
-                raise NoMask
+                raise indexer.NoMask
             #grab the month and year out of the first archive
             regex = mask.replace('<month>', '(%s)' % MONTH_REGEX).replace('<year>', '(\d\d\d\d)')
             match = re.search(regex, info['first_archive'])
