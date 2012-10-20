@@ -443,22 +443,23 @@ def splitIntoThreads(text, level3=False):
 def __cleanLinks(link):
     link = link.encode('utf-8')
     #[[piped|links]] --> links
-    search = re.search('\[\[(.*?)\|(.*?)\]\]', link)
+    search = re.search('\[\[:?(.*?)\|(.*?)\]\]', link)
     while search:
         link = link.replace(search.group(0), search.group(2))
-        search = re.search('\[\[(.*?)\|(.*?)\]\]', link)
+        search = re.search('\[\[:?(.*?)\|(.*?)\]\]', link)
     #[[wikilinks]] --> wikilinks
-    search = re.search('\[\[(.*?)\]\]', link)
+    search = re.search('\[\[:?(.*?)\]\]', link)
     while search:
         link = link.replace(search.group(0), search.group(1))
-        search = re.search('\[\[(.*?)\]\]', link)
+        search = re.search('\[\[:?(.*?)\]\]', link)
     #'''bold''' --> bold
     #''italics'' --> italics
     search = re.search("('''|'')(.*?)('''|'')", link)
     while search:
         link = link.replace(search.group(0), search.group(2))
         search = re.search("('''|'')(.*?)('''|'')", link)
-    
+    #<nowiki>blah</nowiki> --> blah
+    link = link.replace('<nowiki>','').replace('</nowiki>','')
     link = urllib.quote(link)
     return link
 
