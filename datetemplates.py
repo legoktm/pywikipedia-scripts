@@ -49,7 +49,7 @@ class DateBot():
     def gen(self):
         cat = pywikibot.Category(self.site, 'Category:Wikipedia maintenance categories sorted by month')
         for subcat in cat.subcategories():
-            for page in subcat.articles(content=True, namespaces=[0]):
+            for page in subcat.articles(namespaces=[0]):
                 yield page
 
     def is_dormant(self, page):
