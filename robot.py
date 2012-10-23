@@ -81,7 +81,10 @@ class Robot:
         self.args = pywikibot.handleArgs()
     def setAction(self, text):
         self.summary = text
-    
+
+    def setSpeed(self, speed):
+        pywikibot.config.put_throttle = speed
+
     def startLogging(self, logPage):
         self.loggingEnabled = True
         self.localLog = False
