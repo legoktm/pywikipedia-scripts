@@ -27,10 +27,10 @@ IN THE SOFTWARE.
 import re
 import pywikibot
 
-site = pywikibot.getSite()
+site = pywikibot.Site()
 page = pywikibot.Page(site,'Wikipedia:Possibly unfree files')
 wikitext = page.get()
 search = re.compile(r'\n==New listings==', re.IGNORECASE)
-wikitext = search.sub(r'\n*[[/{{subst:#time:Y F j|-14 days}}]]\n==New listings==', wikitext)
+wikitext = search.sub(r'\n*[[/{{subst:#time:Y F j|-7 days}}]]\n==New listings==', wikitext)
 EditMsg = 'Adding new day to holding cell'
 page.put(wikitext, EditMsg)
