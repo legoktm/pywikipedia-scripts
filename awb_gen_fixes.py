@@ -99,7 +99,7 @@ class AWBGenFixes():
                 return True
         return False
 
-    def do_page(self, text, fixes=True):
+    def do_page(self, text, fixes=True, date=True):
         if fixes:
             text = self.all_fixes(text)
         code = mwparserfromhell.parse(text)
@@ -110,7 +110,7 @@ class AWBGenFixes():
                 new_name = self.redirects[name]
                 if new_name.lower() != name: #prevents from capitalizing the first letter needlessly
                     temp.name = new_name
-            if temp.name.lower() in self.date_these:
+            if (temp.name.lower() in self.date_these) and date:
                 if not temp.has_param('date'):
                     temp.add('date', datetime.datetime.today().strftime('%B %Y'))
                     if temp.name.lower() in summary.keys():
