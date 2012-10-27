@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
-
+import time
 import pywikibot
 import mwparserfromhell
 import robot
@@ -59,22 +59,23 @@ class FileHasRationaleYesBot(robot.Robot):
         if page.namespace() != 6:
             return
         text = page.get()
-        if '<nowiki>' in text:
-            print 'NOWIKI'
-        #    return
         text, gen_fix_summary = self.AWBGenFixes.do_page(text)
         code = mwparserfromhell.parse(text)
         tag = False
         log = '* '
         summary = 'Bot: Updating license tag(s) with image has rationale=yes'
         for template in code.filter_templates(recursive=True):
-            name = template.name.lower().strip()
+            name = pywikibot.removeDisabledParts(template.name.lower()).strip()
+            print name
+            #print self.NFURs
+            #time.sleep(5)
             if name in self.NFURs:
                 print name
                 tag = True
         if tag:
             for template in code.filter_templates(recursive=True):
-                if pywikibot.removeDisabledParts(template.name.lower()).strip() in self.licenses:
+                name = pywikibot.removeDisabledParts(template.name.lower()).strip()
+                if name in self.licenses:
                     template.add('image has rationale', 'yes')
                     log += '[[:%s]]: Adding <code>|image has rationale=yes</code>' % page.title()
         else:

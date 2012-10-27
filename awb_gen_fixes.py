@@ -105,7 +105,7 @@ class AWBGenFixes():
         code = mwparserfromhell.parse(text)
         summary= {}
         for temp in code.filter_templates(recursive=True):
-            name = temp.name.lower().strip()
+            name = pywikibot.removeDisabledParts(temp.name.lower()).strip()
             if name in self.redirects.keys():
                 new_name = self.redirects[name]
                 if new_name.lower() != name: #prevents from capitalizing the first letter needlessly
