@@ -74,7 +74,7 @@ class FileHasRationaleYesBot(robot.Robot):
                 tag = True
         if tag:
             for template in code.filter_templates(recursive=True):
-                if template.name.lower().strip() in self.licenses:
+                if pywikibot.removeDisabledParts(template.name.lower()).strip() in self.licenses:
                     template.add('image has rationale', 'yes')
                     log += '[[:%s]]: Adding <code>|image has rationale=yes</code>' % page.title()
         else:
