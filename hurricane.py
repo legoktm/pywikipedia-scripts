@@ -143,6 +143,7 @@ class Hurricane:
         time = line[find-5:find-1]
         day = datetime.date.today()
         dt = datetime.datetime(day.year, day.month, day.day, int(time[:2]), int(time[2:]))
+        self.TIMESTAMP = dt
         return dt
 
     def format_timestamp(self, dt):
@@ -159,7 +160,7 @@ class Hurricane:
 
 
 
-    def update(self):
+    def update(self, push=True):
         self.fetch_info()
         self.parse_info()
         print self.LOCATION
@@ -190,7 +191,8 @@ class Hurricane:
                     template.get('movement').value = self.format_movement(self.MOVEMENT)
                     template.get('pressure').value = self.format_pressure(self.PRESSURE)
         pywikibot.showDiff(text, unicode(code))
-        self.wikipage.put(unicode(code), 'Bot: Updating hurricane infobox. Errors? [[User talk:Legoktm|report them!]]')
+        if push:
+            self.wikipage.put(unicode(code), 'Bot: Updating hurricane infobox. Errors? [[User talk:Legoktm|report them!]]')
 
 
 
@@ -202,10 +204,24 @@ def main():
     for line in text.splitlines():
         if go:
             split = line.split('||')
-            if not (len(split) == 2):
-                continue
-            storm = Hurricane(split[0], pywikibot.Page(SITE, split[1]))
-            storm.update()
+            if len(split) == 2:
+                storm = Hurricane(split[0], pywikibot.Page(SITE, split[1]))
+                storm.update(push=True)
+            elif len(split) == 3:
+                storm1 = Hurricane(split[0], pywikibot.Page(SITE, split[2]))
+                if split[1]:
+                    storm2 = Hurricane(split[1], pywikibot.Page(SITE, split[2]))
+                else:
+                    storm1.update(push=True)
+                    continue
+                storm1.update(push=False)
+                storm2.update(push=False)
+                if storm1.TIMESTAMP > storm2.TIMESTAMP:
+                    print 'Updating storm1'
+                    storm1.update(push=True)
+                else:
+                    print 'Updating storm2'
+                    storm2.update(push=True)
         if '<pre>' in line:
             go=True
 
