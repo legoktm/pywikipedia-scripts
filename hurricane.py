@@ -33,6 +33,7 @@ import pywikibot
 import mwparserfromhell
 SITE = pywikibot.Site()
 HEADERS = {'User-Agent':'HurricaneInfoUpdaterBot - http://enwp.org/User:Legobot'}
+COMMENT_THINGY = "<!-- SAME DAY, EDT AND UTC: TIME EDT (TIME UTC) DATE. DIFFERENT DAYS, EDT AND UTC: TIME EDT DATE EDT (TIME UTC DATE UTC) ///NOTICE THE DATE UTC INSIDE THE PARENTHESIS NOT OUTSIDE-->"
 class Hurricane:
     """
     A class which should represent each storm
@@ -71,7 +72,7 @@ class Hurricane:
                     self.CATEGORY = self.determine_category(self.WINDS['mph'])
             elif line.startswith('SUMMARY') and 'UTC' in line:
                 if not hasattr(self, 'UTC_TIMESTAMP'):
-                    self.UTC_TIMESTAMP = self.parse_timestamp(line)
+                    self.UTC_TIMESTAMP = self.format_timestamp(self.parse_timestamp(line))+ COMMENT_THINGY
 
     def parse_movement(self, line):
         if 'STATIONARY' in line:
