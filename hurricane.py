@@ -143,20 +143,19 @@ class Hurricane:
         time = line[find-5:find-1]
         day = datetime.date.today()
         dt = datetime.datetime(day.year, day.month, day.day, int(time[:2]), int(time[2:]))
-        print self.format_timestamp(dt)
         return dt
 
     def format_timestamp(self, dt):
         AST = dt - datetime.timedelta(hours=4)
         AST_AMPM = CONVERT_AMPM[AST.strftime('%p')]
-        AST_HR = AST.strftime('%I')
+        AST_HR = str(int(AST.strftime('%I')))
         DATE = dt.strftime('%B %d')
         AST_DATE = AST.strftime('%B %d')
         UTC_TIME = dt.strftime('%H%M')
         if AST_DATE == DATE:
-            return AST_HR + ' ' + AST_AMPM + ' [[Atlantic Standard Time|AST]] (' + UTC_TIME + ' [[Coordinated Universal Time|UTC]]) ' + DATE
+            return AST_HR + ' ' + AST_AMPM + ' [[Eastern Daylight Time|EDT]] (' + UTC_TIME + ' [[Coordinated Universal Time|UTC]]) ' + DATE
         else:
-            return AST_HR + ' ' + AST_AMPM + ' ' + AST_DATE + ' [[Atlantic Standard Time|AST]] (' + UTC_TIME + ' '+ DATE + ' [[Coordinated Universal Time|UTC]])'
+            return AST_HR + ' ' + AST_AMPM + ' ' + AST_DATE + ' [[Eastern Daylight Time|EDT]] (' + UTC_TIME + ' '+ DATE + ' [[Coordinated Universal Time|UTC]])'
 
 
 
@@ -170,6 +169,29 @@ class Hurricane:
         print self.PRESSURE
         print self.WINDS
         #print self.UTC_TIMESTAMP
+        #actually update crap
+        #return
+        text = self.wikipage.get()
+        code = mwparserfromhell.parse(text)
+        main = pywikibot.Page(self.wikipage.site, '2012 Atlantic hurricane season')
+        main_text = main.get()
+        main_code = mwparserfromhell.parse(main_text)
+        for template in code.filter_templates():
+            name = template.name.lower().strip()
+            if name == 'Infobox hurricane current'.lower():
+                if template.get('name').value.strip() == 'Hurricane Sandy':
+                    template.get('time').value = self.UTC_TIMESTAMP
+                    template.get('category').value = self.CATEGORY
+                    template.get('gusts').value = self.format_wind(self.WINDS)
+                    template.get('lat').value = self.LOCATION['latc']
+                    template.get(1).value = self.LOCATION['latd']
+                    template.get('lon').value = self.LOCATION['lonc']
+                    template.get(2).value = self.LOCATION['lond']
+                    template.get('movement').value = self.format_movement(self.MOVEMENT)
+                    template.get('pressure').value = self.format_pressure(self.PRESSURE)
+        pywikibot.showDiff(text, unicode(code))
+        self.wikipage.put(unicode(code), 'Bot: Updating hurricane infobox. Errors? [[User talk:Legoktm|report them!]]')
+
 
 
 
