@@ -119,17 +119,17 @@ class Hurricane:
         return '%(mph)s mph (%(kmh)s km/h)' % data
 
     def determine_category(self, mph):
-        if mph < 35:
+        if mph <= 38:
             return 'depression'
-        elif mph < 64:
+        elif mph <= 73:
             return 'storm'
-        elif mph < 84:
+        elif mph <= 95:
             return 'cat1'
-        elif mph < 100:
+        elif mph <= 110:
             return 'cat2'
-        elif mph < 132:
+        elif mph <= 129:
             return 'cat3'
-        elif mph < 157:
+        elif mph <= 156:
             return 'cat4'
         else:
             return 'cat5'
