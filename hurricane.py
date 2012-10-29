@@ -96,6 +96,8 @@ class Hurricane:
         return float(kmh)/constant
 
     def format_movement(self, data):
+        if type(data) == str:
+            return 'Stationary'
         data['knots'] = int(self.kmhtkt(data['kmh']))
         return '%(direction)s at %(knots)s kt (%(mph)s mph; %(kmh)s km/h)' % data
 
@@ -107,7 +109,7 @@ class Hurricane:
         return {'mbar':mb,'inch':inch}
 
     def format_pressure(self, data):
-        return '%(mbar)s [[mbar]] (%(inch)s [[inHg]])' % data
+        return '%(mbar)s [[mbar]] ([[hPa]]; %(inch)s [[inHg]])' % data
 
     def parse_wind(self, line):
         line=line[26:]
