@@ -85,6 +85,7 @@ class Hurricane:
             'mph':match.group(3),
             'kmh':match.group(4),
         }
+        d['knots'] = self.kmhtkt(int(d['kmh']))
         return d
 
     def kmhtkt(self, kmh):
