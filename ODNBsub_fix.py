@@ -58,15 +58,14 @@ def process_page(page):
 
     pywikibot.showDiff(state, text)
     if text != state:
-        #page.put(unicode(text), 'Bot: Tagging ap.google.* links with {{dead link}}')
+        page.put(unicode(text), 'Bot: Adjusting placement of {{[[Template:ODNBsub|ODNBsub]]}}')
         return True
     else:
         return None
-#process_page(pywikibot.Page(SITE, 'American International Group'))
 
 def gen():
     page = pywikibot.Page(SITE, 'Template:ODNBsub')
-    for c in page.getReferences(onlyTemplateInclusion=True, content=True,namespaces=[0]):
+    for c in page.getReferences(onlyTemplateInclusion=True,namespaces=[0]):
         yield c
 count = 0
 try:
@@ -77,12 +76,12 @@ try:
         print '--------'
         if res:
             count +=1
-        #if res:
-        #    LOG += '\n* '+page.title(asLink=True)
-        #    count += 1
+        if res:
+            LOG += '\n* '+page.title(asLink=True)
+            count += 1
         #if count >= 50:
         #    break
 finally:
-    print 'COUNTED: %s' % count
-    #log_page = pywikibot.Page(SITE, 'User:Legobot/Logs/25')
-    #log_page.put(LOG, 'Bot: Updating userspace log')
+    #print 'COUNTED: %s' % count
+    log_page = pywikibot.Page(SITE, 'User:Legobot/Logs/25')
+    log_page.put(LOG, 'Bot: Updating userspace log')
