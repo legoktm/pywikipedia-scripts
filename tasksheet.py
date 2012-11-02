@@ -88,12 +88,12 @@ class UpdateTaskSheetRobot(robot.Robot):
         return pageContent
     
     def functionSummary(self, text):
-        found = re.findall("'''Function Summary:''' (.*?)\n", text, re.IGNORECASE)
+        found = re.findall("'''Function Summary:''' (.*?)\n", text)
         try:
             real = found[0]
         except IndexError:
             try:
-                found = re.findall("'''Function Overview:''' (.*?)\n", text, re.IGNORECASE)
+                found = re.findall("'''Function (o|O)verview:''' (.*?)\n", text)
                 real = found[0][1]
             except IndexError:
                 real = ''
