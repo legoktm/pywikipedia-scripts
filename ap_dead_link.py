@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
 import re
-
+import datetime
 import pywikibot
 import mwparserfromhell
 
@@ -34,7 +34,7 @@ AWB.load()
 
 LOG = '==~~~~~=='
 
-TAG = '{{dead link|date=October 2012|bot=Legobot}}'
+TAG = '{{dead link|date=%s|bot=Legobot}}' % datetime.datetime.today().strftime('%B %Y')
 def process_page(page):
     text = page.get()
     text, blah = AWB.do_page(text, date=False)
@@ -87,7 +87,6 @@ def process_page(page):
         return True
     else:
         return None
-count = 6
 #process_page(pywikibot.Page(SITE, 'American International Group'))
 
 def gen():
@@ -102,11 +101,7 @@ try:
         print page
         res = process_page(page)
         print '--------'
-        if res:
-            LOG += '\n* '+page.title(asLink=True)
-            count += 1
-        if count >= 50:
-            break
 finally:
-    log_page = pywikibot.Page(SITE, 'User:Legobot/Logs/23')
-    log_page.put(LOG, 'Bot: Updating userspace log')
+    pass
+    #log_page = pywikibot.Page(SITE, 'User:Legobot/Logs/23')
+    #log_page.put(LOG, 'Bot: Updating userspace log')
