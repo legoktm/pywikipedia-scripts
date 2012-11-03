@@ -50,7 +50,7 @@ def parse_page(page):
         del lines[lines.index(l)]
     newtext = '\n'.join(lines)
     pywikibot.showDiff(content, newtext)
-    #page.put(newtext, 'Bot: removing completed requests. Want to help? Join the [[Wikipedia:WikiProject Requested articles/Backlog Drive|WikiProject Requested articles Backlog Drive]] today!')
+    page.put(newtext, 'Bot: removing completed requests. Want to help? Join the [[Wikipedia:WikiProject Requested articles/Backlog Drive|WikiProject Requested articles Backlog Drive]] today!')
     quit()
 
 
@@ -85,14 +85,13 @@ def parse_line(line):
             #IT EXISTS
             print pg.title()+' exists!'
             talk = pg.toggleTalkPage()
-            #TagBot.tag_page(talk)
+            TagBot.tag_page(talk)
             return True
     #print pg.title()+' doesn\'t exist :('
 
 
 
 if __name__ == "__main__":
-    #for page in gen():
-    #    parse_page(page)
+    for page in gen():
+        parse_page(page)
     #parse_page(pywikibot.Page(site, 'Wikipedia:Requested articles/Applied arts and sciences/Medicine'))
-    print len(list(gen()))
