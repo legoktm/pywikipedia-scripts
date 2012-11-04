@@ -149,7 +149,7 @@ class TaggerBot(robot.Robot):
             #pywikibot.showDiff(text, unicode(code))
             self.output('* [[%s]] --> "%s-class"' % (page.title(), std_class))
             page.put(unicode(code), 'Bot: Auto-assessing a class of "%s-class"' % std_class)
-            return
+            return True
         if append and not clas:
             self.output('* Unable to parse a class from [[:%s]]' % page.title())
             return
@@ -183,6 +183,7 @@ class TaggerBot(robot.Robot):
         #pywikibot.showDiff(text, unicode(code))
         page.put(unicode(code), summary)
         self.output('* [[:%s]] --> "%s-class"' % (page.title(), std_class))
+        return True
 
         
     
