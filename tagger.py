@@ -307,7 +307,7 @@ class TaggerBot(robot.Robot):
             
         
 if __name__ == "__main__":
-    bot = TaggerBot()
+    bot = TaggerBot(raw_input("What template would you like to add? No Template: prefix. "))
     try:
         bot.run()
     finally:
