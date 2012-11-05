@@ -35,8 +35,9 @@ AWB.load()
 LOG = '==~~~~~=='
 TEMPLATES = ['ODNBsub', 'OEDsub']
 def process_page(page):
-    text = state = page.get()
+    text = page.get()
     text, blah = AWB.do_page(text, date=False)
+    state = text
     #find ref tags
     for tag in re.finditer(r'<ref(.*?)>(.*?)</ref>', text):
         for template in mwparserfromhell.parse(tag.group(2)).filter_templates():
@@ -67,7 +68,7 @@ def gen():
     page = pywikibot.Page(SITE, 'Template:ODNBsub')
     for c in page.getReferences(onlyTemplateInclusion=True,namespaces=[0]):
         yield c
-count = 0
+count = 25
 try:
     for page in gen():
     #for page in [pywikibot.Page(SITE, 'Bayeux Tapestry')]:
@@ -75,13 +76,12 @@ try:
         res = process_page(page)
         print '--------'
         if res:
-            count +=1
-        if res:
             LOG += '\n* '+page.title(asLink=True)
             count += 1
-        #if count >= 50:
-        #    break
+        if count >= 50:
+            break
 finally:
-    #print 'COUNTED: %s' % count
+    print 'COUNTED: %s' % count
     log_page = pywikibot.Page(SITE, 'User:Legobot/Logs/25')
+    LOG = log_page.text + LOG
     log_page.put(LOG, 'Bot: Updating userspace log')
