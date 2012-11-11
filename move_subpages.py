@@ -60,7 +60,7 @@ def main():
         new_page = pywikibot.Page(site, new)
         if not new_page.toggleTalkPage().exists(): #skip if no talkpage exists
             continue
-        subpages = SubPageGenerator(new+'/') #skip if no subpages
+        subpages = SubPageGenerator(old+'/') #skip if no subpages
         if not subpages:
             continue
         summary = "Bot: Finishing move by [[User:%s]] (%s)" % (user, cmt)
