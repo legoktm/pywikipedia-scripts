@@ -39,7 +39,7 @@ def SubPageGenerator(name):
     return [item['title'] for item in request]
 
 def create_timestamp(old=False):
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.utcnow() - datetime.timedelta(days=2)
     if old:
         now -= datetime.timedelta(days=1)
     return now.strftime('%Y-%m-%dT%H:00:00Z')
