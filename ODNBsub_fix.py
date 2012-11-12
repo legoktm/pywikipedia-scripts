@@ -66,9 +66,9 @@ def process_page(page):
 
 def gen():
     page = pywikibot.Page(SITE, 'Template:ODNBsub')
-    for c in page.getReferences(onlyTemplateInclusion=True,namespaces=[0]):
+    for c in page.getReferences(onlyTemplateInclusion=True,namespaces=[0], content=True):
         yield c
-count = 25
+count = 0
 try:
     for page in gen():
     #for page in [pywikibot.Page(SITE, 'Bayeux Tapestry')]:
@@ -78,10 +78,9 @@ try:
         if res:
             LOG += '\n* '+page.title(asLink=True)
             count += 1
-        if count >= 50:
-            break
 finally:
     print 'COUNTED: %s' % count
-    log_page = pywikibot.Page(SITE, 'User:Legobot/Logs/25')
-    LOG = log_page.text + LOG
-    log_page.put(LOG, 'Bot: Updating userspace log')
+    if count > 0:
+        log_page = pywikibot.Page(SITE, 'User:Legobot/Logs/25')
+        LOG = log_page.text + LOG
+        log_page.put(LOG, 'Bot: Updating userspace log')
