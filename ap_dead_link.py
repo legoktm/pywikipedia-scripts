@@ -28,80 +28,82 @@ import mwparserfromhell
 
 import urlregex
 import awb_gen_fixes
-SITE = pywikibot.Site()
-AWB = awb_gen_fixes.AWBGenFixes(SITE)
-AWB.load()
 
 LOG = '==~~~~~=='
 
-TAG = '{{dead link|date=%s|bot=Legobot}}' % datetime.datetime.today().strftime('%B %Y')
-def process_page(page):
-    text = page.get()
-    text, blah = AWB.do_page(text, date=False)
-    code = mwparserfromhell.parse(text)
-    urls = []
-    for m in urlregex.MATCH_URL.finditer(unicode(code)):
-        u = m.group(0)
-        if u.startswith(('http://ap.google', 'https://ap.google')):
-            urls.append(u)
-    """
-    buffer = unicode(code)
-    for template in code.filter_templates():
-        for url in urls:
-            if url in template:
-                if template.has_param('archiveurl'):
-                    urls.remove(url)
-                else:
-                    buffer = buffer.replace(unicode(template), unicode(template)+TAG)
-                    urls.remove(url)
-    code = buffer
-    """
-    #find ref tags
-    loop1= False
-    for tag in re.finditer(r'<ref(.*?)>(.*?)</ref>', unicode(code)):
-        for url in urls:
-            if url in tag.group(2):
-                for template in mwparserfromhell.parse(tag.group(2)).filter_templates():
-                    if template.has_param('archiveurl'):
-                        try:
-                            urls.remove(url)
-                        except ValueError:
-                            pass
-                        loop1 = True
+class DeadLinkTaggerBot:
+    def __init__(self, domain):
+        self.site = pywikibot.Site()
+        self.AWB = awb_gen_fixes.AWBGenFixes(self.site)
+        self.tag = '{{dead link|date=%s|bot=Legobot}}' % datetime.datetime.today().strftime('%B %Y')
+        self.domain = domain
+        self.simulate = False
+
+    def process_page(self, page):
+        text = page.get()
+        text, blah = self.AWB.do_page(text, date=False)
+        code = mwparserfromhell.parse(text)
+        urls = []
+        for m in urlregex.MATCH_URL.finditer(unicode(code)):
+            u = m.group(0)
+            if u.startswith(('http://'+self.domain, 'https://'+self.domain)):
+                urls.append(u)
+        #find ref tags
+        loop1= False
+        for tag in re.finditer(r'<ref(.*?)>(.*?)</ref>', unicode(code)):
+            for url in urls:
+                if url in tag.group(2):
+                    for template in mwparserfromhell.parse(tag.group(2)).filter_templates():
+                        if template.has_param('archiveurl'):
+                            try:
+                                urls.remove(url)
+                            except ValueError:
+                                pass
+                            loop1 = True
+                    if loop1:
+                        break
+                    if 'dead link' in tag.group(0).lower():
+                        urls.remove(url)
+                    elif 'wayback' in tag.group(0).lower():
+                        urls.remove(url)
+                    elif 'webcite' in tag.group(0).lower():
+                        urls.remove(url)
+                    else:
+                        code = unicode(code).replace(tag.group(0), '<ref'+tag.group(1)+'>'+tag.group(2)+self.tag+'</ref>')
+                        urls.remove(url)
                 if loop1:
+                    loop1 = False
                     break
-                if 'dead link' in tag.group(0).lower():
-                    urls.remove(url)
-                else:
-                    code = unicode(code).replace(tag.group(0), '<ref'+tag.group(1)+'>'+tag.group(2)+TAG+'</ref>')
-                    urls.remove(url)
-            if loop1:
-                loop1 = False
-                break
-    if urls:
-        print 'STILL HAVE THESE LEFT: '+', '.join(urls)
+        if urls:
+            print 'STILL HAVE THESE LEFT: '+', '.join(urls)
 
-    pywikibot.showDiff(text, unicode(code))
-    if text != unicode(code):
-        page.put(unicode(code), 'Bot: Tagging ap.google.* links with {{dead link}}')
-        return True
-    else:
-        return None
-#process_page(pywikibot.Page(SITE, 'American International Group'))
+        pywikibot.showDiff(text, unicode(code))
+        if text != unicode(code):
+            if self.simulate:
+                print 'Not editing, just simulating.'
+                return None
+            page.put(unicode(code), 'Bot: Tagging %s links with {{dead link}}' %self.domain)
+            return True
+        else:
+            return None
+    #process_page(pywikibot.Page(SITE, 'American International Group'))
 
-def gen():
-    for page in SITE.exturlusage('ap.google.com', protocol='http', namespaces=[0]):
-        yield page
-    for page in SITE.exturlusage('ap.google.com', protocol='https', namespaces=[0]):
-        yield page
+    def gen(self):
+        for page in self.site.exturlusage(self.domain, protocol='http', namespaces=[0]):
+            yield page
+        for page in self.site.exturlusage(self.domain, protocol='https', namespaces=[0]):
+            yield page
 
-try:
+    def run(self):
+        for arg in pywikibot.handleArgs():
+            if arg == '--sim':
+                self.simulate = True
+        self.AWB.load()
+        for page in self.gen():
+            print page
+            res = self.process_page(page)
+            print '--------'
 
-    for page in gen():
-        print page
-        res = process_page(page)
-        print '--------'
-finally:
-    pass
-    #log_page = pywikibot.Page(SITE, 'User:Legobot/Logs/23')
-    #log_page.put(LOG, 'Bot: Updating userspace log')
+if __name__ == "__main__":
+    bot = DeadLinkTaggerBot('canadianpress.google.com')
+    bot.run()
