@@ -82,7 +82,7 @@ def main():
         site, u'Wikipedia:Articles for creation/Wrongly moved submissions')
     current_text = p.get()
     newtext = current_text + '\n' + logtext
-    p.put(newtext, u'BOT: Updating log')
+    p.put(newtext, u'BOT: Updating log ([[WP:AFC|!earwigbot]])')
 
 
 if __name__ == "__main__":
