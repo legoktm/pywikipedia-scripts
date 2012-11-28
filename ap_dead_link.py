@@ -38,6 +38,11 @@ class DeadLinkTaggerBot:
         self.tag = '{{dead link|date=%s|bot=Legobot}}' % datetime.datetime.today().strftime('%B %Y')
         self.domain = domain
         self.simulate = False
+        if self.domain.startswith('*.'):
+            self.clean = self.domain[2:]
+        else:
+            self.clean = self.domain
+        self.matching = re.compile('https?://(www\.)?(.*?)'+re.escape(self.clean))
 
     def process_page(self, page):
         text = page.get()
@@ -46,8 +51,11 @@ class DeadLinkTaggerBot:
         urls = []
         for m in urlregex.MATCH_URL.finditer(unicode(code)):
             u = m.group(0)
-            if u.startswith(('http://'+self.domain, 'https://'+self.domain)):
+            if self.matching.search(u):
                 urls.append(u)
+            else:
+                pass
+                #print 'Did not match: '+u
         #find ref tags
         loop1= False
         for tag in re.finditer(r'<ref(.*?)>(.*?)</ref>', unicode(code)):
@@ -105,5 +113,5 @@ class DeadLinkTaggerBot:
             print '--------'
 
 if __name__ == "__main__":
-    bot = DeadLinkTaggerBot('canadianpress.google.com')
+    bot = DeadLinkTaggerBot('*.btinternet.com')
     bot.run()
