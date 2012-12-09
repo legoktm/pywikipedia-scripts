@@ -63,7 +63,7 @@ class FileHasRationaleYesBot(robot.Robot):
         code = mwparserfromhell.parse(text)
         tag = False
         log = '* '
-        summary = 'Bot: Updating license tag(s) with image has rationale=yes'
+        summary = 'Bot: Updating license tag(s) with image has rationale=yes (errors? [[User:Legobot/Stop/22|stop me]])'
         for template in code.filter_templates(recursive=True):
             name = pywikibot.removeDisabledParts(template.name.lower()).strip()
             print name
@@ -81,8 +81,8 @@ class FileHasRationaleYesBot(robot.Robot):
         else:
             print 'Skipping '+page.title(asLink=True)
             return
-        if gen_fix_summary:
-            summary += ', also dating ' + gen_fix_summary
+        #if gen_fix_summary:
+        #    summary += ', also dating ' + gen_fix_summary
         puttext = unicode(code).lstrip('\n')
         pywikibot.showDiff(text, puttext)
         self.output(log)
