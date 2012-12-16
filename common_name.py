@@ -49,7 +49,7 @@ for line in text.splitlines():
         print 'Didn\'t work.'
         errors.append(line)
         moved = False
-    if moved:
+    if not moved:
         continue
     #remove the template
     page = pywikibot.Page(site, s.group('target'))
