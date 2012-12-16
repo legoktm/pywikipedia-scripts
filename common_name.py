@@ -44,14 +44,17 @@ for line in text.splitlines():
     print '{source} --> {target}'.format(**s.groupdict())
     try:
         original.move(s.group('target'), summary)
+        moved = True
     except:
         print 'Didn\'t work.'
         errors.append(line)
+        moved = False
+    if moved:
         continue
     #remove the template
     page = pywikibot.Page(site, s.group('target'))
     text = page.get()
-    newtext = t_regex.sub('').strip()
+    newtext = t_regex.sub('', text).strip()
     pywikibot.showDiff(text, newtext)
     page.put(newtext, 'Bot: Removing {{italic title}}')
 print 'Saving errors'
