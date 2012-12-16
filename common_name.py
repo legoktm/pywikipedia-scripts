@@ -21,11 +21,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
 import wikipedia as pywikibot
+import mwparserfromhell
 import re
 regex = re.compile('# \[\[(?P<source>.*?)\]\] to \[\[(?P<target>.*?)\]\]')
 site = pywikibot.getSite()
 template = pywikibot.Page(site, 'Template:Italic title')
-all = [p.title(withNamespace=False).lower() for p in template.getReferences(redirectsOnly=True)]
+all = [p.title(withNamespace=False).lower() for p in template.getReferences(redirectsOnly=True, )]
 t_regex = re.compile('\{\{'+'|'.join(all)+'\}\}', flags=re.IGNORECASE)
 control = pywikibot.Page(site, 'User:Italic title bot/Common name for renaming')
 text = control.get()
@@ -53,8 +54,11 @@ for line in text.splitlines():
         continue
     #remove the template
     page = pywikibot.Page(site, s.group('target'))
-    text = page.get()
-    newtext = t_regex.sub('', text).strip()
+    newtext = text = page.get()
+    code = mwparserfromhell.parse(text)
+    for template in code.filter_templates(recursive=True):
+        if template.name.lower().strip() in all:
+            newtext = newtext.replace(unicode(template),'').strip()
     pywikibot.showDiff(text, newtext)
     page.put(newtext, 'Bot: Removing {{italic title}}')
 print 'Saving errors'
