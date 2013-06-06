@@ -34,7 +34,7 @@ class OldidGABot(robot.Robot):
         self.startLogging(pywikibot.Page(self.site, 'User:Legobot/GA'))
         page = pywikibot.Page(self.site, 'Category:Good articles without an oldid')
         category = pywikibot.Category(page)
-        gen = pywikibot.pagegenerators.CategorizedPageGenerator(category)
+        gen = category.articles()
         for page in gen:
             self.process_page(page)
         
