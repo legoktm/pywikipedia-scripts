@@ -51,11 +51,11 @@ class FileHasRationaleYesBot(robot.Robot):
 
 
     def check_page(self):
-        text = self.stop_page.get(force=True)
+        text = self.stop_page.get(force=True).encode('utf-8')
         if text.lower() != 'run':
             raise Exception("Stop page disabled")
     def do_page(self, page):
-        print page.title(asLink=True)
+        print page.title(asLink=True).encode('utf-8')
         if page.namespace() != 6:
             return
         text = page.get()
@@ -79,7 +79,7 @@ class FileHasRationaleYesBot(robot.Robot):
                     template.add('image has rationale', 'yes')
                     log += '[[:%s]]: Adding <code>|image has rationale=yes</code>' % page.title()
         else:
-            print 'Skipping '+page.title(asLink=True)
+            print 'Skipping '+page.title(asLink=True).encode('utf-8')
             return
         #if gen_fix_summary:
         #    summary += ', also dating ' + gen_fix_summary
