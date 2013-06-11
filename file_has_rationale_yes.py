@@ -66,11 +66,9 @@ class FileHasRationaleYesBot(robot.Robot):
         summary = 'Bot: Updating license tag(s) with image has rationale=yes (errors? [[User:Legobot/Stop/22|stop me]])'
         for template in code.filter_templates(recursive=True):
             name = pywikibot.removeDisabledParts(template.name.lower()).strip()
-            print name
             #print self.NFURs
             #time.sleep(5)
             if name in self.NFURs:
-                print name
                 tag = True
         if tag:
             for template in code.filter_templates(recursive=True):
