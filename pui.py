@@ -28,6 +28,8 @@ import re
 import pywikibot
 
 site = pywikibot.Site()
+if not site.logged_in():
+    site.login()
 page = pywikibot.Page(site,'Wikipedia:Possibly unfree files')
 wikitext = page.get()
 search = re.compile(r'\n==New listings==', re.IGNORECASE)
