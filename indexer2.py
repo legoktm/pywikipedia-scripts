@@ -44,9 +44,7 @@ import index_help
 
 """
 
-DB = '/data/projects/legoktm/pywp/index2.db'
-if not os.path.isfile(DB):
-    DB = 'index2.db'
+DB = '/data/project/legobot/pywp/index2.db'
 
 #constants
 MONTH_NAMES = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')
