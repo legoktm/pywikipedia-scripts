@@ -21,15 +21,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
+from __future__ import unicode_literals
 # See https://en.wikipedia.org/wiki/Wikipedia:Bot_requests/Archive_49#Bot_request_for_adding_oldid_parameters_to_good_articles
 import time
 import re
 import pywikibot
 import robot
 
+
 class OldidGABot(robot.Robot):
+
     def __init__(self):
-       robot.Robot.__init__(self, task=18)
+        robot.Robot.__init__(self, task=18)
+
     def run(self):
         self.startLogging(pywikibot.Page(self.site, 'User:Legobot/GA'))
         page = pywikibot.Page(self.site, 'Category:Good articles without an oldid')
@@ -37,7 +41,7 @@ class OldidGABot(robot.Robot):
         gen = category.articles()
         for page in gen:
             self.process_page(page)
-        
+
     def process_page(self, page):
         talk_page = page
         page = talk_page.toggleTalkPage()
@@ -46,7 +50,9 @@ class OldidGABot(robot.Robot):
         oldid = None
         real_oldid = None
         while not foundOldid:
-            hist = page.fullVersionHistory(total=10, startid=oldid)
+            self.site.loadrevisions(page, getText=True, rvdir=False,
+                                    step=10, total=10, startid=oldid)
+            hist = page.fullVersionHistory(total=10)  # This should fetch nothing...
             for revision in hist:
                 if re.search('\{\{(good|ga) article\}\}', revision[3], re.IGNORECASE):
                     oldid = revision[0]
@@ -64,9 +70,8 @@ class OldidGABot(robot.Robot):
         newtext = oldtext.replace(search.group(0), '{{GA|%s|oldid=%s}}' % (search.group(1), oldid))
         pywikibot.showDiff(oldtext, newtext)
         talk_page.put(newtext, 'BOT: Adding |oldid=%s to {{[[Template:GA|GA]]}}' % oldid)
-        
-                
-            
+
+
 if __name__ == "__main__":
     bot = OldidGABot()
     try:
