@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import unicode_literals
 """
 Copyright (C) 2012 Legoktm
 
@@ -20,8 +19,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
-"""
-"""
+
 Code state: alpha
 Goal: A comprehensive helper script for User:Legobot
 Built on top of the pywikibot framework
@@ -53,6 +51,7 @@ if __name__ == "__main__":
         bot.pushLog()
 
 """
+from __future__ import unicode_literals
 import sys
 import os
 import re
@@ -60,13 +59,16 @@ import time
 import pywikibot
 
 CONFIGURATION_PAGE = 'User:%s/Configuration'
-CHECK_CONFIG_PAGE_EVERY = 10 #edits
+CHECK_CONFIG_PAGE_EVERY = 10  # edits
 LOG_PATH = os.path.expanduser('~/public_html/%s/')
 
+
 class Robot:
-    
+
     def __init__(self, task):
         self.site = pywikibot.getSite()
+        if not self.site.logged_in():
+            self.site.login()
         self.trial = False
         self.trial_counter = 0
         self.trial_max = 0
@@ -79,6 +81,7 @@ class Robot:
         self.counter = 0
         self.CHECK_CONFIG_PAGE_EVERY = CHECK_CONFIG_PAGE_EVERY
         self.args = pywikibot.handleArgs()
+
     def setAction(self, text):
         self.summary = text
 
@@ -139,9 +142,7 @@ class Robot:
             if (not text.endswith('\n')) or (not text.startswith('\n')):
                 self.logText += '\n'
         pywikibot.output(text)
-    
-            
-        
+
     def edit(self, page, text, summary=False, async=False, force = False, minorEdit=False):
         if not force:
             if self.counter >= self.CHECK_CONFIG_PAGE_EVERY:
@@ -157,17 +158,17 @@ class Robot:
         page.put(text, summary, minorEdit=minorEdit,async=async)
         if self.trial:
             self.trial_action()
-        
+
     def trial_action(self):
         self.trial_counter += 1
         if self.trial_counter >= self.trial_max:
             print 'Finished trial, quitting now.'
             self.quit()
-    
+
     def start_trial(self, count):
         self.trial = True
         self.trial_max = count
-    
+
     def isEnabled(self):
         if self.task == 0: #override for non-filed tasks
             self.enabled = True
@@ -188,10 +189,9 @@ class Robot:
         else:
             self.enabled = (search.group(3) == 'true')
         return self.enabled
-    
+
     def quit(self, status=0):
         #something fancy to go here later
         if self.loggingEnabled:
             self.pushLog()
         sys.exit(status)
-    
