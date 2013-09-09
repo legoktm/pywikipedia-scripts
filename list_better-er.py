@@ -12,19 +12,27 @@ bad = """
 * three line
 """
 
+good = """
+* one line
+* two lines
+
+== header ==
+* one line
+* two line
+* three line
+"""
 
 def fix_text(text):
     code = mwparserfromhell.parse(text)
     newtext = ''
-    for x in code.nodes:
+    for index, x in enumerate(code.nodes):
         flag = False
         #print repr(x)
-        index = code.nodes.index(x)
-        if index != 0 and isinstance(x, mwparserfromhell.nodes.text.Text):
+        if index != 0 and isinstance(x, mwparserfromhell.nodes.Text):
             if x.endswith('\n\n'):
-                if isinstance(code.nodes[index-1], mwparserfromhell.nodes.tag.Tag) and str(code.nodes[index-1]) == '*':
+                if isinstance(code.nodes[index-1], mwparserfromhell.nodes.Tag) and str(code.nodes[index-1]) == '*':
                     if len(code.nodes) >= index + 1:
-                        if isinstance(code.nodes[index+1], mwparserfromhell.nodes.tag.Tag) and str(code.nodes[index+1]) == '*':
+                        if isinstance(code.nodes[index+1], mwparserfromhell.nodes.Tag) and str(code.nodes[index+1]) == '*':
                             #print 'trimming'
                             flag = True
                             newtext += unicode(x)[:-1]
