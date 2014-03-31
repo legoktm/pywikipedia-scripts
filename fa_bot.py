@@ -76,6 +76,7 @@ def promote_fac(fac_name, rev_info, was_promoted, featured_type='FA'):
         needs_fa_icon = True
         if re.search('\{\{featured\s?(small|article)\}\}', article_text, re.IGNORECASE):
             needs_fa_icon = False
+            new_article_text = None  # Shut up PyCharm
         elif re.search('\{\{(good|ga) article\}\}', article_text, re.IGNORECASE):
             new_article_text = re.sub('\{\{(good|ga) article\}\}', '{{featured article}}', article_text, flags=re.IGNORECASE)
         else:
@@ -126,7 +127,8 @@ def promote_fac(fac_name, rev_info, was_promoted, featured_type='FA'):
 }}}}
 """.format(date=timestamp, link=fac_name, oldid=latest_rev, prom=prom_text, status=current_status, c_abbr=c_abbr)\
                             + article_talk_text
-    article_talk_text = re.sub('\{\{featured (list|article) candidates.*?\}\}', '', article_talk_text, flags=re.IGNORECASE)
+    article_talk_text = re.sub('\{\{featured (list|article) candidates.*?\}\}', '', article_talk_text,
+                               flags=re.IGNORECASE)
     article_talk.put(article_talk_text, 'Bot: Updating {{Article history}} after ' + c_abbr)
     if was_promoted and is_fa:
         # Only FA's can be GA's, not FL's.
