@@ -15,14 +15,17 @@ GA_SUBPAGES = ['Agriculture, food and drink', 'Art and architecture', 'Engineeri
 
 ARTICLE_HISTORY = ['Article History', 'Article milestones', 'ArticleHistory', 'Articlehistory', 'Article milestones']
 
+STUFF_TO_PROCESS = [
+    ('Wikipedia:Featured article candidates/Featured log', True, 'FA')
+    ('Wikipedia:Featured article candidates/Archived nominations', False, 'FA'),
+    ('Wikipedia:Featured list candidates/Featured log', True, 'FL'),
+    ('Wikipedia:Featured list candidates/Failed log', False, 'FL'),
+]
 
-def get_facs_to_handle(promoted=True):
+
+def get_facs_to_handle(prefix):
     monthyear = datetime.datetime.utcnow().strftime('%B %Y')
-    if promoted:
-        prefix = 'Featured log'
-    else:
-        prefix = 'Archived nominations'
-    monthpage = pywikibot.Page(site, 'Wikipedia:Featured article candidates/' + prefix + '/' + monthyear)
+    monthpage = pywikibot.Page(site, prefix + '/' + monthyear)
     data = {}
     # FIXME: HAAAAAAAAAAAACK
     # Assumes that log will have <100 edits
@@ -37,10 +40,12 @@ def get_facs_to_handle(promoted=True):
     return data
 
 
-def promote_fac(fac_name, rev_info, was_promoted):
+def promote_fac(fac_name, rev_info, was_promoted, featured_type='FA'):
     pg = pywikibot.Page(site, fac_name)
     article_title = fac_name.split('/')[1]
     oldid = rev_info[0]
+    c_abbr = featured_type + 'C'  # Either 'FLC' or 'FAC'
+    is_fa = featured_type == 'FA'
     timestamp = rev_info[1].strftime('%H:%M, %d %B %Y (UTC)')
     username = rev_info[2]
     text = pg.get()
@@ -53,10 +58,17 @@ def promote_fac(fac_name, rev_info, was_promoted):
         print '%s has already been handled, skipping.' % fac_name
         return
     print fac_name, oldid
-    top_text = "{{{{subst:Fa top|result='''{prom}''' by [[User:{user}|{user}]] {ts} [//en.wikipedia.org/?diff={oldid}]" \
-               "}}}}".format(user=username, ts=timestamp, oldid=oldid, prom=prom_text)
-    newtext = top_text + '\n' + text + '\n' + '{{subst:Fa bottom}}'
-    pg.put(newtext, 'Bot: Archiving FAC')
+    if is_fa:
+        top_text = "{{{{subst:Fa top|result='''{prom}''' by [[User:{user}|{user}]] {ts} " \
+                   "[//en.wikipedia.org/?diff={oldid}]}}}}"\
+            .format(user=username, ts=timestamp, oldid=oldid, prom=prom_text)
+        bottom_text = '{{subst:Fa bottom}}'
+    else:
+        top_text = '{{{{subst:User:Hahc21/FLTop|result={prom}|closer={user}|time={ts}|link=diff={oldid}]}}}}'\
+            .format(prom=prom_text, user=username, ts=timestamp, oldid=oldid)
+        bottom_text = '{{subst:User:Hahc21/FCloseBottom}}'
+    newtext = top_text + '\n' + text + '\n' + bottom_text
+    pg.put(newtext, 'Bot: Archiving ' + c_abbr)
     article = pywikibot.Page(site, article_title)
     article_text = article.get()
     if was_promoted:
@@ -75,16 +87,16 @@ def promote_fac(fac_name, rev_info, was_promoted):
     article_talk_text = article_talk.get()
 
     if was_promoted:
-        current_status = 'FA'
+        current_status = featured_type  # 'FA' or 'FL'
     else:
-        current_status = 'FFAC'
+        current_status = 'F' + c_abbr  # 'FFAC' or 'FFLC'
 
     has_article_history = False
     parsed = mwparserfromhell.parse(article_talk_text)
     for temp in parsed.filter_templates():
         # This might have some false positives, may need adjusting later.
         if was_promoted and temp.has_param('class'):
-            temp.get('class').value = 'FA'
+            temp.get('class').value = featured_type
         for ah_name in ARTICLE_HISTORY:
             if temp.name.matches(ah_name):
                 has_article_history = True
@@ -92,7 +104,7 @@ def promote_fac(fac_name, rev_info, was_promoted):
                 while temp.has_param('action' + str(num)):
                     num += 1
                 prefix = 'action' + str(num)
-                temp.add(prefix, 'FAC')
+                temp.add(prefix, c_abbr)
                 temp.add(prefix+'date', timestamp.replace(' (UTC)', ''))
                 temp.add(prefix+'link', fac_name)
                 temp.add(prefix+'result', prom_text)
@@ -105,17 +117,19 @@ def promote_fac(fac_name, rev_info, was_promoted):
     if not has_article_history:
         article_talk_text = """
 {{{{Article history
-|action1=FAC
+|action1={c_abbr}
 |action1date={date}
 |action1link={link}
 |action1result={prom}
 |action1oldid={oldid}
 |currentstatus={status}
 }}}}
-""".format(date=timestamp, link=fac_name, oldid=latest_rev, prom=prom_text, status=current_status) + article_talk_text
-    article_talk_text = re.sub('\{\{featured article candidates.*?\}\}', '', article_talk_text, flags=re.IGNORECASE)
-    article_talk.put(article_talk_text, 'Bot: Updating {{Article history}} after FAC')
-    if was_promoted:
+""".format(date=timestamp, link=fac_name, oldid=latest_rev, prom=prom_text, status=current_status, c_abbr=c_abbr)\
+                            + article_talk_text
+    article_talk_text = re.sub('\{\{featured (list|article) candidates.*?\}\}', '', article_talk_text, flags=re.IGNORECASE)
+    article_talk.put(article_talk_text, 'Bot: Updating {{Article history}} after ' + c_abbr)
+    if was_promoted and is_fa:
+        # Only FA's can be GA's, not FL's.
         update_ga_listings(article_title)
     quit()
 
@@ -144,9 +158,10 @@ def update_ga_listings(article):
 
 
 if __name__ == '__main__':
-    for was_promoted in [True, False]:
-        facs = get_facs_to_handle(promoted=was_promoted)
+    for prefix, was_promoted, featured_type in STUFF_TO_PROCESS:
+        facs = get_facs_to_handle(prefix)
         for fac, rev_info in facs.iteritems():
             if fac == 'TOClimit':
                 continue
-            promote_fac(fac, rev_info, was_promoted=was_promoted)
+            promote_fac(fac, rev_info, was_promoted=was_promoted, featured_type=featured_type)
+    
