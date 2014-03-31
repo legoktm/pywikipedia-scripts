@@ -164,4 +164,4 @@ if __name__ == '__main__':
             if fac == 'TOClimit':
                 continue
             promote_fac(fac, rev_info, was_promoted=was_promoted, featured_type=featured_type)
-    
+
