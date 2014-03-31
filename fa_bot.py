@@ -103,12 +103,12 @@ def promote_fac(fac_name, rev_info, was_promoted, featured_type='FA'):
                 num = 1
                 while temp.has_param('action' + str(num)):
                     num += 1
-                prefix = 'action' + str(num)
-                temp.add(prefix, c_abbr)
-                temp.add(prefix+'date', timestamp.replace(' (UTC)', ''))
-                temp.add(prefix+'link', fac_name)
-                temp.add(prefix+'result', prom_text)
-                temp.add(prefix+'oldid', latest_rev)
+                action_prefix = 'action' + str(num)
+                temp.add(action_prefix, c_abbr)
+                temp.add(action_prefix+'date', timestamp.replace(' (UTC)', ''))
+                temp.add(action_prefix+'link', fac_name)
+                temp.add(action_prefix+'result', prom_text)
+                temp.add(action_prefix+'oldid', latest_rev)
                 if was_promoted or temp.get('currentstatus') != 'GA':
                     temp.get('currentstatus').value = current_status
                 break
