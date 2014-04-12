@@ -16,7 +16,7 @@ GA_SUBPAGES = ['Agriculture, food and drink', 'Art and architecture', 'Engineeri
 ARTICLE_HISTORY = ['Article History', 'Article milestones', 'ArticleHistory', 'Articlehistory', 'Article milestones']
 
 STUFF_TO_PROCESS = [
-    ('Wikipedia:Featured article candidates/Featured log', True, 'FA')
+    ('Wikipedia:Featured article candidates/Featured log', True, 'FA'),
     ('Wikipedia:Featured article candidates/Archived nominations', False, 'FA'),
     ('Wikipedia:Featured list candidates/Featured log', True, 'FL'),
     ('Wikipedia:Featured list candidates/Failed log', False, 'FL'),
