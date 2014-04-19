@@ -74,15 +74,19 @@ def promote_fac(fac_name, rev_info, was_promoted, featured_type='FA'):
     if was_promoted:
         # add the FA icon, possibly removing the GA icon
         needs_fa_icon = True
-        if re.search('\{\{featured\s?(small|article)\}\}', article_text, re.IGNORECASE):
+        if is_fa:
+            icon = '{{featured article}}'
+        else:
+            icon = '{{featured list}}'
+        if re.search('\{\{featured\s?(small|article|list)\}\}', article_text, re.IGNORECASE):
             needs_fa_icon = False
             new_article_text = None  # Shut up PyCharm
         elif re.search('\{\{(good|ga) article\}\}', article_text, re.IGNORECASE):
-            new_article_text = re.sub('\{\{(good|ga) article\}\}', '{{featured article}}', article_text, flags=re.IGNORECASE)
+            new_article_text = re.sub('\{\{(good|ga) article\}\}', icon, article_text, flags=re.IGNORECASE)
         else:
-            new_article_text = '{{featured article}}\n' + article_text
+            new_article_text = icon + '\n' + article_text
         if needs_fa_icon:
-            article.put(new_article_text, 'Bot: Adding {{featured article}}')
+            article.put(new_article_text, 'Bot: Adding '+icon)
     latest_rev = pywikibot.Page(site, article_title).latestRevision()
     article_talk = article.toggleTalkPage()
     article_talk_text = article_talk.get()
