@@ -115,7 +115,7 @@ def promote_fac(fac_name, rev_info, was_promoted, featured_type='FA'):
                 temp.add(action_prefix+'result', prom_text)
                 temp.add(action_prefix+'oldid', latest_rev)
                 if temp.has('currentstatus', ignore_empty=False):
-                    if was_promoted or temp.get('currentstatus') != 'GA':
+                    if was_promoted or temp.get('currentstatus').value != 'GA':
                         temp.get('currentstatus').value = current_status
                 else:
                     temp.add('currentstatus', current_status)
