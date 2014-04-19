@@ -13,7 +13,7 @@ GA_SUBPAGES = ['Agriculture, food and drink', 'Art and architecture', 'Engineeri
                'Philosophy and religion', 'Social sciences and society', 'Sports and recreation',
                'Media and drama', 'Warfare', 'Video games']
 
-ARTICLE_HISTORY = ['Article History', 'Article milestones', 'ArticleHistory', 'Articlehistory', 'Article milestones']
+ARTICLE_HISTORY = ['Article history', 'Article History', 'Article milestones', 'ArticleHistory', 'Articlehistory', 'Article milestones']
 
 STUFF_TO_PROCESS = [
     ('Wikipedia:Featured article candidates/Featured log', True, 'FA'),
