@@ -15,6 +15,8 @@ GA_SUBPAGES = ['Agriculture, food and drink', 'Art and architecture', 'Engineeri
 
 ARTICLE_HISTORY = ['Article history', 'Article History', 'Article milestones', 'ArticleHistory', 'Articlehistory', 'Article milestones']
 
+GA_TEMPLATE = ['GA', 'Ga']
+
 STUFF_TO_PROCESS = [
     ('Wikipedia:Featured article candidates/Featured log', True, 'FA'),
     ('Wikipedia:Featured article candidates/Archived nominations', False, 'FA'),
@@ -98,6 +100,18 @@ def promote_fac(fac_name, rev_info, was_promoted, featured_type='FA'):
 
     has_article_history = False
     parsed = mwparserfromhell.parse(article_talk_text)
+    # First we're going to do a preliminary check for {{GA}} and stuffs.
+    pre_stuff_params = {}
+    for temp in parsed.filter_templates():
+        for ga_name in GA_TEMPLATE:
+            if temp.name.matches(ga_name):
+                pre_stuff_params[''] = 'GAN'
+                pre_stuff_params['date'] = temp.get(1).value
+                pre_stuff_params['result'] = 'promoted'  # Safe to assume?
+                pre_stuff_params['link'] = article_talk.title() + '/GA' + unicode(temp.get('page').value)
+                for param in ['topic', 'oldid']:
+                    pre_stuff_params[param] = temp.get(param).value
+
     for temp in parsed.filter_templates():
         # This might have some false positives, may need adjusting later.
         if was_promoted and temp.has_param('class'):
@@ -108,6 +122,12 @@ def promote_fac(fac_name, rev_info, was_promoted, featured_type='FA'):
                 num = 1
                 while temp.has_param('action' + str(num)):
                     num += 1
+                for param in pre_stuff_params:
+                    if param == 'topic':
+                        temp.add('topic', pre_stuff_params['topic'])
+                    else:
+                        temp.add('action'+str(num)+param, pre_stuff_params[param])
+                num += 1
                 action_prefix = 'action' + str(num)
                 temp.add(action_prefix, c_abbr)
                 temp.add(action_prefix+'date', timestamp.replace(' (UTC)', ''))
@@ -123,23 +143,31 @@ def promote_fac(fac_name, rev_info, was_promoted, featured_type='FA'):
 
     article_talk_text = unicode(parsed)
     if not has_article_history:
-        article_talk_text = """
-{{{{Article history
-|action1={c_abbr}
-|action1date={date}
-|action1link={link}
-|action1result={prom}
-|action1oldid={oldid}
-|currentstatus={status}
-}}}}
-""".format(date=timestamp, link=fac_name, oldid=latest_rev, prom=prom_text, status=current_status, c_abbr=c_abbr)\
-                            + article_talk_text
-    article_talk_text = re.sub('\{\{featured (list|article) candidates.*?\}\}', '', article_talk_text,
+        article_history_text = mwparserfromhell.parse('{{Article history}}')
+        temp = article_history_text.filter_templates()[0]
+        for param in pre_stuff_params:
+            if param == 'topic':
+                temp.add('topic', pre_stuff_params[param])
+            else:
+                temp.add('action1'+param, pre_stuff_params[param])
+        new_params = {
+            'action2': c_abbr,
+            'action2date': timestamp,
+            'action2link': fac_name,
+            'action2result': prom_text,
+            'action2oldid': latest_rev,
+            'currentstatus': current_status,
+        }
+        for param in new_params:
+            temp.add(param, new_params[param])
+        article_talk_text = unicode(article_history_text) + article_talk_text
+    article_talk_text = re.sub('\{\{(featured (list|article) candidates|ga)\s*\|.*?\}\}', '', article_talk_text,
                                flags=re.IGNORECASE)
     article_talk.put(unicode(article_talk_text).strip(), 'Bot: Updating {{Article history}} after ' + c_abbr)
     if was_promoted and is_fa:
         # Only FA's can be GA's, not FL's.
         update_ga_listings(article_title)
+    quit()
 
 
 def update_ga_listings(article):
