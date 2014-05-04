@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
 from __future__ import unicode_literals
-# See https://en.wikipedia.org/wiki/Wikipedia:Bot_requests/Archive_49#Bot_request_for_adding_oldid_parameters_to_good_articles
+# See [[Wikipedia:Bot_requests/Archive_49#Bot_request_for_adding_oldid_parameters_to_good_articles]]
 import re
 import pywikibot
 import robot
