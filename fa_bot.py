@@ -37,8 +37,7 @@ def get_facs_to_handle(prefix):
     hist = monthpage.fullVersionHistory(total=100)  # This should fetch nothing...
     for revision in hist:
         for temp in mwparserfromhell.parse(revision[3]).filter_templates():
-            data[temp.name] = (revision[0], revision[1], revision[2])
-
+            data[unicode(temp.name)] = (revision[0], revision[1], revision[2])
     return data
 
 
