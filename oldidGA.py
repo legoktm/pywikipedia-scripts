@@ -23,7 +23,6 @@ IN THE SOFTWARE.
 """
 from __future__ import unicode_literals
 # See https://en.wikipedia.org/wiki/Wikipedia:Bot_requests/Archive_49#Bot_request_for_adding_oldid_parameters_to_good_articles
-import time
 import re
 import pywikibot
 import robot
