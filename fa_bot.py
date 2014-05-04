@@ -164,6 +164,7 @@ def promote_fac(fac_name, rev_info, was_promoted, featured_type='FA'):
                                flags=re.IGNORECASE)
     article_talk.put(unicode(article_talk_text).strip(), 'Bot: Updating {{Article history}} after ' + c_abbr)
     if was_promoted and is_fa:
+        print 'Checking GA listings...'
         # Only FA's can be GA's, not FL's.
         update_ga_listings(article_title)
     quit()
