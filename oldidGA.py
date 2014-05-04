@@ -46,10 +46,10 @@ class OldidGABot(robot.Robot):
         talk_page = page
         page = talk_page.toggleTalkPage()
         #find the edit where {{good article}] was added
-        foundOldid = False
+        found_oldid = False
         oldid = None
         real_oldid = None
-        while not foundOldid:
+        while not found_oldid:
             self.site.loadrevisions(page, getText=True, rvdir=False,
                                     step=10, total=10, startid=oldid)
             hist = page.fullVersionHistory(total=10)  # This should fetch nothing...
@@ -58,7 +58,7 @@ class OldidGABot(robot.Robot):
                     oldid = revision[0]
                 else:
                     #current oldid is the right one
-                    foundOldid = True
+                    found_oldid = True
                     break
         #add the oldid in the template
         if not oldid:
