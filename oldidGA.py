@@ -48,7 +48,6 @@ class OldidGABot(robot.Robot):
         #find the edit where {{good article}] was added
         found_oldid = False
         oldid = None
-        real_oldid = None
         while not found_oldid:
             self.site.loadrevisions(page, getText=True, rvdir=False,
                                     step=10, total=10, startid=oldid)
