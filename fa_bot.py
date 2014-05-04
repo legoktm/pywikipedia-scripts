@@ -58,7 +58,7 @@ def promote_fac(fac_name, rev_info, was_promoted, featured_type='FA'):
         # Already handled
         print '%s has already been handled, skipping.' % fac_name
         return
-    print fac_name, oldid
+    print unicode(fac_name), oldid
     if is_fa:
         top_text = "{{{{subst:Fa top|result='''{prom}''' by [[User:{user}|{user}]] {ts} " \
                    "[//en.wikipedia.org/?diff={oldid}]}}}}"\
