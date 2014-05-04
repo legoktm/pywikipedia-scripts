@@ -66,7 +66,7 @@ class OldidGABot(robot.Robot):
             return
         self.output('* Adding |oldid=%s to [[%s]]' % (oldid, talk_page.title()))
         oldtext = talk_page.get()
-        search = re.search('\{\{GA\|(.*?)\}\}', oldtext)
+        search = re.search('\{\{GA\s?\|(.*?)\}\}', oldtext)
         newtext = oldtext.replace(search.group(0), '{{GA|%s|oldid=%s}}' % (search.group(1), oldid))
         pywikibot.showDiff(oldtext, newtext)
         talk_page.put(newtext, 'BOT: Adding |oldid=%s to {{[[Template:GA|GA]]}}' % oldid)
