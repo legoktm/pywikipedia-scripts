@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import unicode_literals
 """
 Copyright (C) 2012 Legoktm
 
@@ -21,6 +20,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
+from __future__ import unicode_literals
+
 import time
 import pywikibot
 import mwparserfromhell
@@ -38,6 +39,7 @@ class FileHasRationaleYesBot(robot.Robot):
         self.AWBGenFixes.load()
         self.AWBGenFixes.load_redirects(pywikibot.Page(self.site, 'User:Legoktm/AWB/TR'))
         self.stop_page = pywikibot.Page(self.site, 'User:Legobot/Stop/22')
+
     def run(self):
         #fetch copyright licenses
         cat = pywikibot.Category(self.site, 'Category:Wikipedia non-free file copyright tags')
@@ -49,11 +51,11 @@ class FileHasRationaleYesBot(robot.Robot):
         for page in self.gen:
             self.do_page(page)
 
-
     def check_page(self):
         text = self.stop_page.get(force=True)
         if text.lower() != 'run':
             raise Exception("Stop page disabled")
+
     def do_page(self, page):
         #print page.title(asLink=True).encode('utf-8')
         if page.namespace() != 6:
@@ -86,7 +88,8 @@ class FileHasRationaleYesBot(robot.Robot):
         self.output(log)
         self.check_page()
         try:
-            page.put(puttext, summary, nocreate=True)
+            page.text = puttext
+            page.save(summary, async=True, nocreate=True)
         except pywikibot.exceptions.PageNotSaved:
             pass
         except pywikibot.exceptions.LockedPage:

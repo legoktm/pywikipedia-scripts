@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-from __future__ import unicode_literals
 """
 Copyright (C) 2012 Legoktm
 
@@ -22,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
+from __future__ import unicode_literals
 
 try:
     import pywikibot
@@ -35,20 +35,25 @@ except ImportError:
 
 site = pywikibot.getSite()
 
+
 def run(gen):
+    text = ''
     for temp in gen:
-        t=temp.title(withNamespace=False)
+        t = temp.title(withNamespace=False)
         item = [page.title(withNamespace=False) for page in temp.getReferences(redirectsOnly=True, namespaces=[10])]
         if not item:
             continue
         statement = ', '.join('{{tl|'+title+'}}' for title in item)
-        print '* '+statement + " → '''{{tl|%s}}'''" % temp.title(withNamespace=False)
+        text += '* '+statement + " → '''{{tl|%s}}'''\n" % temp.title(withNamespace=False)
+    return text
 
 
-def gen():
+def gen(*args):
+    args = list(args)
+    args.append('-namespace:10')
     gen = pagegenerators.GeneratorFactory()
-    gen.filterNamespaces(10)
-    for arg in pywikibot.handleArgs():
+    #gen.filterNamespaces(10)
+    for arg in pywikibot.handleArgs(*args):
         if arg.startswith('-cat:'):
             print '== [[:%s]] == ' % arg[5:]
         elif arg.startswith('-catr:'):
@@ -56,4 +61,12 @@ def gen():
         gen.handleArg(arg)
     return gen.getCombinedGenerator()
 
-run(gen())
+text = ''
+text += run(gen('-cat:Category:Non-free use rationale templates'))
+text += run(gen('-cat:Category:Wikipedia non-free file copyright tags'))
+text += run(gen('-cat:Category:File namespace templates'))
+text += run(gen('-cat:Category:File maintenance templates'))
+text += run(gen('-cat:Category:Marker templates'))
+text += run(gen('-cat:Category:Restriction tags'))
+print text
+pywikibot.Page(pywikibot.Site(), 'User:Legoktm/AWB/TR').put(text, 'Updating list of redirects')
