@@ -22,8 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
 from __future__ import unicode_literals
-# See https://en.wikipedia.org/wiki/Wikipedia:Bot_requests/Archive_49#Bot_request_for_adding_oldid_parameters_to_good_articles
-import time
+# See [[Wikipedia:Bot_requests/Archive_49#Bot_request_for_adding_oldid_parameters_to_good_articles]]
 import re
 import pywikibot
 import robot
@@ -46,10 +45,9 @@ class OldidGABot(robot.Robot):
         talk_page = page
         page = talk_page.toggleTalkPage()
         #find the edit where {{good article}] was added
-        foundOldid = False
+        found_oldid = False
         oldid = None
-        real_oldid = None
-        while not foundOldid:
+        while not found_oldid:
             self.site.loadrevisions(page, getText=True, rvdir=False,
                                     step=10, total=10, startid=oldid)
             hist = page.fullVersionHistory(total=10)  # This should fetch nothing...
@@ -58,7 +56,7 @@ class OldidGABot(robot.Robot):
                     oldid = revision[0]
                 else:
                     #current oldid is the right one
-                    foundOldid = True
+                    found_oldid = True
                     break
         #add the oldid in the template
         if not oldid:
@@ -66,7 +64,7 @@ class OldidGABot(robot.Robot):
             return
         self.output('* Adding |oldid=%s to [[%s]]' % (oldid, talk_page.title()))
         oldtext = talk_page.get()
-        search = re.search('\{\{GA\|(.*?)\}\}', oldtext)
+        search = re.search('\{\{GA\s?\|(.*?)\}\}', oldtext)
         newtext = oldtext.replace(search.group(0), '{{GA|%s|oldid=%s}}' % (search.group(1), oldid))
         pywikibot.showDiff(oldtext, newtext)
         talk_page.put(newtext, 'BOT: Adding |oldid=%s to {{[[Template:GA|GA]]}}' % oldid)
